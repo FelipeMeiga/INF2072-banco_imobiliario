@@ -1,0 +1,6 @@
+ROLL_DICE = "roll_dice"
+BUY_PROPERTY = "buy_property"
+PASS_BUY = "pass_buy"
+PROPOSE_TRADE = "propose_trade"
+ACCEPT_TRADE = "accept_trade"
+DECLINE_TRADE = "decline_trade"
