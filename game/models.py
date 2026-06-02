@@ -5,28 +5,35 @@ from typing import Optional, Tuple
 @dataclass
 class Space:
     name: str
-    type: str  # start, property, tax, chance, empty, jail
+    type: str  # go, property, railroad, utility, tax, chance, community_chest, jail, free_parking, go_to_jail
     price: int = 0
     rent: int = 0
     owner: Optional[int] = None
+    mortgaged: bool = False
+    property_kind: str = "none"  # color, railroad, utility, none
 
-    # Mecânica de regiões/casas/hotel
-    # group: país/região da propriedade. Só propriedades do mesmo grupo formam monopólio.
-    # build_cost: preço para adicionar 1 casa nessa propriedade.
-    # houses: nível de construção. 0 = sem casa, 1..4 = casas, 5 = hotel.
-    # rent_schedule: aluguel por nível de construção, índices 0..5.
+    # group: color/set used to form a monopoly.
+    # houses: 0 = empty, 1..4 = houses, 5 = hotel.
     group: Optional[str] = None
     build_cost: int = 0
     houses: int = 0
     rent_schedule: Tuple[int, int, int, int, int, int] = field(
         default_factory=lambda: (0, 0, 0, 0, 0, 0)
     )
+    mortgage_value: int = 0
+    tax_amount: int = 0
+
+    def is_ownable(self) -> bool:
+        return self.type in ("property", "railroad", "utility")
 
     def current_rent(self) -> int:
-        if self.type != "property":
+        if not self.is_ownable():
             return self.rent
 
-        if self.rent_schedule and 0 <= self.houses < len(self.rent_schedule):
+        if self.mortgaged:
+            return 0
+
+        if self.type == "property" and self.rent_schedule and 0 <= self.houses < len(self.rent_schedule):
             return self.rent_schedule[self.houses]
 
         return self.rent
@@ -39,6 +46,9 @@ class Player:
     money: int
     position: int = 0
     bankrupt: bool = False
+    in_jail: bool = False
+    jail_turns: int = 0
+    jail_free_cards: int = 0
 
     def move(self, steps: int, board_size: int) -> bool:
         old_position = self.position

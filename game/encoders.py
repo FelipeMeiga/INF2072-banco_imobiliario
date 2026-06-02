@@ -6,12 +6,19 @@ import numpy as np
 
 from game.actions import (
     ACCEPT_TRADE,
+    AUCTION_BID,
+    AUCTION_PASS,
     BUY_PROPERTY,
     DECLINE_TRADE,
+    MORTGAGE_PROPERTY,
     PASS_BUY,
+    PAY_JAIL_FINE,
     PROPOSE_TRADE,
     ROLL_DICE,
     BUILD_HOUSE,
+    SELL_HOUSE,
+    UNMORTGAGE_PROPERTY,
+    USE_JAIL_CARD,
 )
 from game.board import NUM_SPACES
 
@@ -23,17 +30,42 @@ ACTION_TYPES = [
     ACCEPT_TRADE,
     DECLINE_TRADE,
     BUILD_HOUSE,
+    SELL_HOUSE,
+    MORTGAGE_PROPERTY,
+    UNMORTGAGE_PROPERTY,
+    PAY_JAIL_FINE,
+    USE_JAIL_CARD,
+    AUCTION_BID,
+    AUCTION_PASS,
 ]
 
 PHASES = [
     "ready_to_roll",
     "awaiting_buy",
     "pending_trade_response",
+    "auction",
     "game_over",
 ]
 
-STATE_SIZE = 4 + 4 + 2 + 4 + 4 + 4 + (NUM_SPACES * 6) + NUM_SPACES + 1
-ACTION_SIZE = len(ACTION_TYPES) + 4 + NUM_SPACES + NUM_SPACES + NUM_SPACES + 2
+STATE_SIZE = (
+    4
+    + len(PHASES)
+    + 2
+    + 1
+    + 4
+    + 4
+    + 4
+    + 4
+    + 4
+    + 4
+    + (NUM_SPACES * 6)
+    + NUM_SPACES
+    + NUM_SPACES
+    + 1
+    + 1
+    + 1
+)
+ACTION_SIZE = len(ACTION_TYPES) + 4 + NUM_SPACES + NUM_SPACES + NUM_SPACES + 3
 
 
 def _one_hot(index: int, size: int) -> List[float]:
@@ -62,6 +94,7 @@ def encode_state(state: Dict[str, Any], num_players: int = 4) -> np.ndarray:
     dice = state.get("dice", (1, 1))
     values.append(float(dice[0]) / 6.0)
     values.append(float(dice[1]) / 6.0)
+    values.append(float(state.get("consecutive_doubles", 0)) / 3.0)
 
     money = list(state.get("player_money", []))[:4]
     while len(money) < 4:
@@ -77,6 +110,21 @@ def encode_state(state: Dict[str, Any], num_players: int = 4) -> np.ndarray:
     while len(bankrupt) < 4:
         bankrupt.append(True)
     values.extend([1.0 if b else 0.0 for b in bankrupt])
+
+    in_jail = list(state.get("player_in_jail", []))[:4]
+    while len(in_jail) < 4:
+        in_jail.append(False)
+    values.extend([1.0 if b else 0.0 for b in in_jail])
+
+    jail_turns = list(state.get("player_jail_turns", []))[:4]
+    while len(jail_turns) < 4:
+        jail_turns.append(0)
+    values.extend([float(t) / 3.0 for t in jail_turns])
+
+    jail_cards = list(state.get("player_jail_free_cards", []))[:4]
+    while len(jail_cards) < 4:
+        jail_cards.append(0)
+    values.extend([float(c) / 2.0 for c in jail_cards])
 
     # Para cada casa, codifica o dono:
     # 0 = não é propriedade
@@ -100,7 +148,14 @@ def encode_state(state: Dict[str, Any], num_players: int = 4) -> np.ndarray:
         houses.append(0)
     values.extend([float(h) / 5.0 for h in houses])
 
-    values.append(float(state.get("turn_count", 0)) / 500.0)
+    mortgaged = list(state.get("property_mortgaged", []))[:NUM_SPACES]
+    while len(mortgaged) < NUM_SPACES:
+        mortgaged.append(False)
+    values.extend([1.0 if m else 0.0 for m in mortgaged])
+
+    values.append(float(state.get("turn_count", 0)) / 2000.0)
+    values.append(float(state.get("bank_houses", 32)) / 32.0)
+    values.append(float(state.get("bank_hotels", 12)) / 12.0)
 
     return np.array(values, dtype=np.float32)
 
@@ -130,10 +185,11 @@ def encode_action(action: Dict[str, Any], num_players: int = 4) -> np.ndarray:
     for i in range(NUM_SPACES):
         values.append(1.0 if i in request_properties else 0.0)
 
-    build_property = int(action.get("property_index", -1))
-    values.extend(_one_hot(build_property, NUM_SPACES))
+    property_index = int(action.get("property_index", -1))
+    values.extend(_one_hot(property_index, NUM_SPACES))
 
     values.append(float(action.get("offer_money", 0)) / 1500.0)
     values.append(float(action.get("request_money", 0)) / 1500.0)
+    values.append(float(action.get("amount", 0)) / 1500.0)
 
     return np.array(values, dtype=np.float32)

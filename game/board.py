@@ -4,42 +4,26 @@ from game.models import Space
 
 NUM_SPACES = 40
 MAX_HOUSES = 5
+BANK_HOUSES = 32
+BANK_HOTELS = 12
+GO_INDEX = 0
+JAIL_INDEX = 10
+FREE_PARKING_INDEX = 20
+GO_TO_JAIL_INDEX = 30
 
-# Cada grupo representa um país/região. Ao possuir todas as propriedades do grupo,
-# o jogador pode construir até 5 níveis naquela propriedade.
-# 1..4 = casas, 5 = hotel.
 GROUPS: Dict[str, List[int]] = {
-    "Brasil": [1, 2, 3],
-    "Argentina": [6, 8, 9],
-    "Chile": [11, 13, 14],
-    "Uruguai": [16, 17, 18, 19],
-    "Portugal": [21, 23, 24],
-    "Espanha": [26, 27, 29],
-    "França": [31, 32, 33],
-    "Itália": [34, 37, 39],
+    "Brown": [1, 3],
+    "Light Blue": [6, 8, 9],
+    "Pink": [11, 13, 14],
+    "Orange": [16, 18, 19],
+    "Red": [21, 23, 24],
+    "Yellow": [26, 27, 29],
+    "Green": [31, 32, 34],
+    "Dark Blue": [37, 39],
 }
 
-GROUP_PRICES = {
-    "Brasil": 100,
-    "Argentina": 120,
-    "Chile": 140,
-    "Uruguai": 160,
-    "Portugal": 180,
-    "Espanha": 200,
-    "França": 220,
-    "Itália": 240,
-}
-
-GROUP_BUILD_COSTS = {
-    "Brasil": 50,
-    "Argentina": 50,
-    "Chile": 75,
-    "Uruguai": 75,
-    "Portugal": 100,
-    "Espanha": 100,
-    "França": 125,
-    "Itália": 150,
-}
+RAILROADS = [5, 15, 25, 35]
+UTILITIES = [12, 28]
 
 SPACE_TO_GROUP: Dict[int, str] = {
     space_index: group
@@ -48,80 +32,107 @@ SPACE_TO_GROUP: Dict[int, str] = {
 }
 
 
-def _rent_schedule(base_rent: int) -> tuple[int, int, int, int, int, int]:
-    """
-    Aluguel por nível de construção.
-
-    0 = sem casa
-    1..4 = casas
-    5 = hotel
-
-    Os multiplicadores são agressivos de propósito para as partidas terminarem
-    com mais frequência por falência, e não por limite de turnos.
-    """
-    return (
-        base_rent,
-        base_rent * 5,
-        base_rent * 10,
-        base_rent * 20,
-        base_rent * 35,
-        base_rent * 60,
+def _ownable(
+    name: str,
+    space_type: str,
+    price: int,
+    rent: int,
+    group: Optional[str] = None,
+    build_cost: int = 0,
+    rent_schedule: tuple[int, int, int, int, int, int] = (0, 0, 0, 0, 0, 0),
+) -> Space:
+    return Space(
+        name=name,
+        type=space_type,
+        price=price,
+        rent=rent,
+        group=group,
+        build_cost=build_cost,
+        rent_schedule=rent_schedule,
+        mortgage_value=price // 2,
+        property_kind="color" if space_type == "property" else space_type,
     )
 
 
-def _create_group_property(index: int, group: str) -> Space:
-    price = GROUP_PRICES[group]
-    build_cost = GROUP_BUILD_COSTS[group]
-
-    # Pequena variação para ruas do mesmo grupo não ficarem 100% iguais.
-    group_spaces = GROUPS[group]
-    offset = group_spaces.index(index)
-    price += offset * 10
-
-    base_rent = max(10, int(price * 0.12))
-
-    return Space(
-        name=f"{group} {offset + 1}",
-        type="property",
+def _property(
+    name: str,
+    price: int,
+    rent_schedule: tuple[int, int, int, int, int, int],
+    group: str,
+    build_cost: int,
+) -> Space:
+    return _ownable(
+        name=name,
+        space_type="property",
         price=price,
-        rent=base_rent,
+        rent=rent_schedule[0],
         group=group,
         build_cost=build_cost,
-        houses=0,
-        rent_schedule=_rent_schedule(base_rent),
+        rent_schedule=rent_schedule,
+    )
+
+
+def _railroad(name: str) -> Space:
+    return _ownable(
+        name=name,
+        space_type="railroad",
+        price=200,
+        rent=25,
+        rent_schedule=(25, 25, 25, 25, 25, 25),
+    )
+
+
+def _utility(name: str) -> Space:
+    return _ownable(
+        name=name,
+        space_type="utility",
+        price=150,
+        rent=0,
+        rent_schedule=(0, 0, 0, 0, 0, 0),
     )
 
 
 def create_board(seed: Optional[int] = None) -> List[Space]:
-    # O parâmetro seed fica por compatibilidade, mas o tabuleiro agora é determinístico.
-    board: List[Space] = []
-    board.append(Space("Início", "start"))
-
-    for i in range(1, NUM_SPACES):
-        if i in SPACE_TO_GROUP:
-            board.append(_create_group_property(i, SPACE_TO_GROUP[i]))
-        elif i in [5, 15, 25, 35]:
-            board.append(
-                Space(
-                    f"Estação {i}",
-                    "property",
-                    price=200,
-                    rent=25,
-                    group=None,
-                    build_cost=0,
-                    houses=0,
-                    rent_schedule=(25, 25, 25, 25, 25, 25),
-                )
-            )
-        elif i in [4, 12, 28, 38]:
-            board.append(Space(f"Imposto {i}", "tax", rent=100))
-        elif i in [7, 22, 36]:
-            board.append(Space(f"Sorte/Reves {i}", "chance"))
-        elif i == 10:
-            board.append(Space("Prisão", "jail"))
-        elif i in [20, 30]:
-            board.append(Space(f"Livre {i}", "empty"))
-        else:
-            board.append(Space(f"Livre {i}", "empty"))
-
-    return board
+    # seed is kept for API compatibility. The classic board is deterministic.
+    return [
+        Space("Go", "go"),
+        _property("Brown 1", 60, (2, 10, 30, 90, 160, 250), "Brown", 50),
+        Space("Community Chest 1", "community_chest"),
+        _property("Brown 2", 60, (4, 20, 60, 180, 320, 450), "Brown", 50),
+        Space("Income Tax", "tax", tax_amount=200),
+        _railroad("Railroad 1"),
+        _property("Light Blue 1", 100, (6, 30, 90, 270, 400, 550), "Light Blue", 50),
+        Space("Chance 1", "chance"),
+        _property("Light Blue 2", 100, (6, 30, 90, 270, 400, 550), "Light Blue", 50),
+        _property("Light Blue 3", 120, (8, 40, 100, 300, 450, 600), "Light Blue", 50),
+        Space("Jail / Just Visiting", "jail"),
+        _property("Pink 1", 140, (10, 50, 150, 450, 625, 750), "Pink", 100),
+        _utility("Utility 1"),
+        _property("Pink 2", 140, (10, 50, 150, 450, 625, 750), "Pink", 100),
+        _property("Pink 3", 160, (12, 60, 180, 500, 700, 900), "Pink", 100),
+        _railroad("Railroad 2"),
+        _property("Orange 1", 180, (14, 70, 200, 550, 750, 950), "Orange", 100),
+        Space("Community Chest 2", "community_chest"),
+        _property("Orange 2", 180, (14, 70, 200, 550, 750, 950), "Orange", 100),
+        _property("Orange 3", 200, (16, 80, 220, 600, 800, 1000), "Orange", 100),
+        Space("Free Parking", "free_parking"),
+        _property("Red 1", 220, (18, 90, 250, 700, 875, 1050), "Red", 150),
+        Space("Chance 2", "chance"),
+        _property("Red 2", 220, (18, 90, 250, 700, 875, 1050), "Red", 150),
+        _property("Red 3", 240, (20, 100, 300, 750, 925, 1100), "Red", 150),
+        _railroad("Railroad 3"),
+        _property("Yellow 1", 260, (22, 110, 330, 800, 975, 1150), "Yellow", 150),
+        _property("Yellow 2", 260, (22, 110, 330, 800, 975, 1150), "Yellow", 150),
+        _utility("Utility 2"),
+        _property("Yellow 3", 280, (24, 120, 360, 850, 1025, 1200), "Yellow", 150),
+        Space("Go To Jail", "go_to_jail"),
+        _property("Green 1", 300, (26, 130, 390, 900, 1100, 1275), "Green", 200),
+        _property("Green 2", 300, (26, 130, 390, 900, 1100, 1275), "Green", 200),
+        Space("Community Chest 3", "community_chest"),
+        _property("Green 3", 320, (28, 150, 450, 1000, 1200, 1400), "Green", 200),
+        _railroad("Railroad 4"),
+        Space("Chance 3", "chance"),
+        _property("Dark Blue 1", 350, (35, 175, 500, 1100, 1300, 1500), "Dark Blue", 200),
+        Space("Luxury Tax", "tax", tax_amount=100),
+        _property("Dark Blue 2", 400, (50, 200, 600, 1400, 1700, 2000), "Dark Blue", 200),
+    ]

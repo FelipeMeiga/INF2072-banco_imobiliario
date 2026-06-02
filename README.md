@@ -72,6 +72,45 @@ o que permite avaliar ações estruturadas, inclusive propostas de troca com pro
 python train_dqn.py --episodes 300
 ```
 
+## Campeonato de checkpoints DQN
+
+O treino pode salvar checkpoints e comparar modelos em um campeonato de self-play.
+A loss continua treinando o DQN, mas o campeonato mede desempenho real em partidas:
+vitorias, colocacao media e patrimonio medio.
+
+Treinar salvando checkpoints:
+
+```bash
+python train_dqn.py --episodes 1000 --checkpoint-every 100
+```
+
+Treinar e rodar campeonato periodico entre os checkpoints mais recentes:
+
+```bash
+python train_dqn.py --episodes 1000 --checkpoint-every 100 --tournament-every 200 --tournament-games 40
+```
+
+Rodar campeonato manual depois do treino:
+
+```bash
+python tournament.py --checkpoints models/checkpoints --games 100 --latest 8
+```
+
+O campeonato inclui dois baselines:
+
+- `pure_random_baseline`: escolhe qualquer acao valida ao acaso.
+- `heuristic_baseline`: usa o agente simples baseado em regras.
+
+Quando o campeonato roda durante o treino, o melhor checkpoint DQN encontrado e
+salvo automaticamente em:
+
+```bash
+models/best_dqn_agent.pt
+```
+
+O epsilon agora decai ate o minimo em 40% dos episodios, para reduzir a fase em
+que os agentes tomam decisoes quase totalmente aleatorias.
+
 O modelo será salvo em:
 
 ```bash

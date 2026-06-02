@@ -22,11 +22,13 @@ MODEL_PATH = "models/dqn_agent.pt"
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
     if env.pending_trade is not None:
         return env.pending_trade["to"]
+    if env.auction is not None:
+        return env.auction["current_bidder"]
     return env.current_player_index
 
 
 def make_env_and_agents():
-    env = BancoImobiliarioEnv(num_players=4, seed=SEED)
+    env = BancoImobiliarioEnv(num_players=4, seed=SEED, enable_undo=True)
     model = QNetwork()
 
     agents = [NeuralAgent(player_id=i, model=model, epsilon=0.02, seed=SEED + i) for i in range(4)]
@@ -95,6 +97,11 @@ def main():
             env, agents = make_env_and_agents()
             paused = START_PAUSED
             last_step_time = 0.0
+
+        if commands["undo"]:
+            if env.undo_last_action():
+                paused = True
+            last_step_time = time.time()
 
         if commands["step_once"]:
             run_one_ai_action(env, agents)

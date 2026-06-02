@@ -46,6 +46,7 @@ class PygameView:
             "speed_up": False,
             "speed_down": False,
             "reset": False,
+            "undo": False,
         }
 
         for event in pygame.event.get():
@@ -65,6 +66,8 @@ class PygameView:
                     commands["speed_down"] = True
                 elif event.key == pygame.K_r:
                     commands["reset"] = True
+                elif event.key in (pygame.K_u, pygame.K_BACKSPACE):
+                    commands["undo"] = True
 
         return commands
 
@@ -85,13 +88,13 @@ class PygameView:
         for i, space in enumerate(env.board):
             rect = get_space_rect(i)
 
-            if space.type == "start":
+            if space.type == "go":
                 color = YELLOW
-            elif space.type == "property":
+            elif space.type in ("property", "railroad", "utility"):
                 color = WHITE
             elif space.type == "tax":
                 color = ORANGE
-            elif space.type == "chance":
+            elif space.type in ("chance", "community_chest"):
                 color = GREEN
             elif space.type == "jail":
                 color = GRAY
@@ -112,7 +115,7 @@ class PygameView:
             name_text = self.tiny_font.render(space.name[:8], True, BLACK)
             self.screen.blit(name_text, (rect.x + 3, rect.y + 18))
 
-            if space.type == "property":
+            if space.type in ("property", "railroad", "utility"):
                 price_text = self.tiny_font.render(f"${space.price}", True, DARK_GRAY)
                 self.screen.blit(price_text, (rect.x + 3, rect.y + 34))
 
@@ -212,6 +215,11 @@ class PygameView:
             True,
             DARK_GRAY,
         )
+        controls = self.tiny_font.render(
+            "SPACE pausa | N/-> avanca | U volta | +/- velocidade | R reinicia",
+            True,
+            DARK_GRAY,
+        )
         self.screen.blit(controls, (SIDE_PANEL_X + 20, y))
         y += 28
 
@@ -288,7 +296,7 @@ class PygameView:
             f"Tipo: {space.type}",
         ]
 
-        if space.type == "property":
+        if space.type in ("property", "railroad", "utility"):
             owner_name = "Nenhum"
             if space.owner is not None:
                 owner_name = env.players[space.owner].name
@@ -300,6 +308,7 @@ class PygameView:
                 f"Aluguel atual: ${current_rent}",
                 f"Construção: {construction}",
                 f"Custo construção: ${getattr(space, 'build_cost', 0)}",
+                f"Hipotecada: {'sim' if getattr(space, 'mortgaged', False) else 'nao'}",
                 f"Dono: {owner_name}",
             ])
 
