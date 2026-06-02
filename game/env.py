@@ -15,7 +15,7 @@ from game.models import Player, Space
 
 START_MONEY = 1500
 PASS_START_BONUS = 200
-MAX_TURNS = 500
+MAX_TURNS = 2000
 
 PLAYER_COLORS = [
     (70, 120, 220),
@@ -143,7 +143,7 @@ class BancoImobiliarioEnv:
 
         self.last_action = action
         acting_player_index = self._get_acting_player_for_action(action)
-        before_net_worth = self._net_worth(acting_player_index)
+        before_net_worth = self._reward_net_worth(acting_player_index)
         before_completed_groups = self._completed_group_count(acting_player_index)
         before_total_houses = self._total_houses(acting_player_index)
         action_type = action.get("type")
@@ -167,7 +167,7 @@ class BancoImobiliarioEnv:
 
         self._check_game_end()
 
-        after_net_worth = self._net_worth(acting_player_index)
+        after_net_worth = self._reward_net_worth(acting_player_index)
         after_completed_groups = self._completed_group_count(acting_player_index)
         after_total_houses = self._total_houses(acting_player_index)
         reward = (after_net_worth - before_net_worth) / 100.0
@@ -602,6 +602,17 @@ class BancoImobiliarioEnv:
         if player.bankrupt:
             return -999999
 
+        total = player.money
+
+        for space in self.board:
+            if space.type == "property" and space.owner == player_index:
+                total += space.price
+                total += space.houses * space.build_cost
+
+        return total
+
+    def _reward_net_worth(self, player_index: int) -> int:
+        player = self.players[player_index]
         total = player.money
 
         for space in self.board:
