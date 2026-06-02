@@ -85,7 +85,7 @@ class BancoImobiliarioEnv:
             for i in range(self.num_players)
         ]
 
-        self.current_player_index = 0
+        self.current_player_index = self.random.randrange(self.num_players)
         self.dice = (1, 1)
         self.last_roll_total = 2
         self.consecutive_doubles = 0
@@ -104,7 +104,7 @@ class BancoImobiliarioEnv:
         self.winner: Optional[int] = None
         self.turn_count = 0
         self.action_count = 0
-        self.last_message = "Jogo iniciado."
+        self.last_message = f"Jogo iniciado. {self.current_player.name} comeca."
         self.last_action: Optional[Dict[str, Any]] = None
         self.event_history: List[Dict[str, Any]] = []
         self.undo_history = []
