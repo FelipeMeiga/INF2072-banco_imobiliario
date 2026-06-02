@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
 
@@ -9,6 +9,27 @@ class Space:
     price: int = 0
     rent: int = 0
     owner: Optional[int] = None
+
+    # Mecânica de regiões/casas/hotel
+    # group: país/região da propriedade. Só propriedades do mesmo grupo formam monopólio.
+    # build_cost: preço para adicionar 1 casa nessa propriedade.
+    # houses: nível de construção. 0 = sem casa, 1..4 = casas, 5 = hotel.
+    # rent_schedule: aluguel por nível de construção, índices 0..5.
+    group: Optional[str] = None
+    build_cost: int = 0
+    houses: int = 0
+    rent_schedule: Tuple[int, int, int, int, int, int] = field(
+        default_factory=lambda: (0, 0, 0, 0, 0, 0)
+    )
+
+    def current_rent(self) -> int:
+        if self.type != "property":
+            return self.rent
+
+        if self.rent_schedule and 0 <= self.houses < len(self.rent_schedule):
+            return self.rent_schedule[self.houses]
+
+        return self.rent
 
 
 @dataclass

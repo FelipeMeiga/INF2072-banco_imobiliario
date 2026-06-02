@@ -8,8 +8,9 @@ from game.actions import (
     PASS_BUY,
     PROPOSE_TRADE,
     ROLL_DICE,
+    BUILD_HOUSE,
 )
-from game.board import NUM_SPACES, create_board
+from game.board import GROUPS, MAX_HOUSES, NUM_SPACES, create_board
 from game.models import Player, Space
 
 START_MONEY = 1500
@@ -25,6 +26,12 @@ PLAYER_COLORS = [
 
 
 class BancoImobiliarioEnv:
+    """
+    Ambiente principal do jogo.
+
+    Essa classe não depende de Pygame. Ela só sabe aplicar regras.
+    A visualização e os agentes conversam com ela usando ações estruturadas.
+    """
 
     def __init__(self, num_players: int = 4, seed: Optional[int] = None):
         self.num_players = num_players
@@ -51,8 +58,10 @@ class BancoImobiliarioEnv:
         self.done = False
         self.winner: Optional[int] = None
         self.turn_count = 0
+        self.action_count = 0
         self.last_message = "Jogo iniciado."
         self.last_action: Optional[Dict[str, Any]] = None
+        self.event_history: List[Dict[str, Any]] = []
         return self.get_state()
 
     @property
@@ -71,11 +80,21 @@ class BancoImobiliarioEnv:
                 space.owner if space.type == "property" else -2
                 for space in self.board
             ],
+            "property_houses": [
+                space.houses if space.type == "property" else 0
+                for space in self.board
+            ],
+            "property_groups": [
+                space.group if space.type == "property" else None
+                for space in self.board
+            ],
             "pending_trade": self.pending_trade,
             "done": self.done,
             "winner": self.winner,
             "turn_count": self.turn_count,
+            "action_count": self.action_count,
             "last_message": self.last_message,
+            "event_history": self.event_history.copy(),
         }
 
     def get_valid_actions(self, player_index: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -105,10 +124,14 @@ class BancoImobiliarioEnv:
         if self.phase == "ready_to_roll":
             actions = [{"type": ROLL_DICE}]
 
+            # Construções entram como ações diretas do ambiente.
+            # A IA não usa menu: ela escolhe construir em uma propriedade específica.
+            actions.extend(self._get_build_actions(player_index))
+
             # Para não explodir o espaço de ações, geramos algumas propostas candidatas.
             # O agente aleatório pode escolher uma delas ou simplesmente rolar os dados.
             if not self.trade_proposed_this_turn:
-                actions.extend(self._sample_trade_actions(player_index, max_actions=6))
+                actions.extend(self._sample_trade_actions(player_index, max_actions=16))
 
             return actions
 
@@ -119,7 +142,10 @@ class BancoImobiliarioEnv:
             return self.get_state(), 0.0, self.done, {"message": self.last_message}
 
         self.last_action = action
-        before_net_worth = self._net_worth(self.current_player_index)
+        acting_player_index = self._get_acting_player_for_action(action)
+        before_net_worth = self._net_worth(acting_player_index)
+        before_completed_groups = self._completed_group_count(acting_player_index)
+        before_total_houses = self._total_houses(acting_player_index)
         action_type = action.get("type")
 
         if action_type == ROLL_DICE:
@@ -130,6 +156,8 @@ class BancoImobiliarioEnv:
             self._pass_buy()
         elif action_type == PROPOSE_TRADE:
             self._propose_trade(action)
+        elif action_type == BUILD_HOUSE:
+            self._build_house(action)
         elif action_type == ACCEPT_TRADE:
             self._accept_trade()
         elif action_type == DECLINE_TRADE:
@@ -139,13 +167,51 @@ class BancoImobiliarioEnv:
 
         self._check_game_end()
 
-        after_net_worth = self._net_worth(self.current_player_index)
+        after_net_worth = self._net_worth(acting_player_index)
+        after_completed_groups = self._completed_group_count(acting_player_index)
+        after_total_houses = self._total_houses(acting_player_index)
         reward = (after_net_worth - before_net_worth) / 100.0
+        reward += self._strategic_reward(
+            action_type,
+            before_completed_groups,
+            after_completed_groups,
+            before_total_houses,
+            after_total_houses,
+        )
 
         if self.done and self.winner is not None:
-            reward += 100.0 if self.winner == self.current_player_index else -100.0
+            reward += 100.0 if self.winner == acting_player_index else -100.0
+
+        self._register_event(acting_player_index, action, reward)
 
         return self.get_state(), reward, self.done, {"message": self.last_message}
+
+    def _register_event(self, acting_player_index: int, action: Dict[str, Any], reward: float):
+        self.action_count += 1
+
+        player_name = self.players[acting_player_index].name
+        action_type = action.get("type", "unknown")
+
+        event = {
+            "number": self.action_count,
+            "turn": self.turn_count,
+            "player": player_name,
+            "action_type": action_type,
+            "message": self.last_message,
+            "reward": reward,
+        }
+
+        self.event_history.append(event)
+
+        # Mantém só os últimos eventos para a interface não ficar pesada.
+        if len(self.event_history) > 12:
+            self.event_history = self.event_history[-12:]
+
+
+    def _get_acting_player_for_action(self, action: Dict[str, Any]) -> int:
+        if self.phase == "pending_trade_response" and self.pending_trade is not None:
+            return self.pending_trade["to"]
+        return self.current_player_index
 
     # ========================================================
     # AÇÕES PRINCIPAIS
@@ -198,11 +264,14 @@ class BancoImobiliarioEnv:
                 return
 
             owner = self.players[space.owner]
-            player.money -= space.rent
-            owner.money += space.rent
+            rent = self.get_rent_for_space(space)
+            player.money -= rent
+            owner.money += rent
+
+            construction_text = self._construction_label(space)
             self.last_message = (
-                f"{player.name} pagou ${space.rent} de aluguel para "
-                f"{owner.name} por {space.name}."
+                f"{player.name} pagou ${rent} de aluguel para "
+                f"{owner.name} por {space.name}{construction_text}."
             )
             self._check_bankruptcy(player)
             self._next_turn()
@@ -253,7 +322,8 @@ class BancoImobiliarioEnv:
         if player.money >= space.price:
             player.money -= space.price
             space.owner = self.current_player_index
-            self.last_message = f"{player.name} comprou {space.name} por ${space.price}."
+            group_text = f" ({space.group})" if space.group else ""
+            self.last_message = f"{player.name} comprou {space.name}{group_text} por ${space.price}."
         else:
             self.last_message = f"{player.name} não tinha dinheiro para comprar {space.name}."
 
@@ -270,6 +340,64 @@ class BancoImobiliarioEnv:
         self.last_message = f"{player.name} decidiu não comprar {space.name}."
         self.phase = "ready_to_roll"
         self._next_turn()
+
+
+    # ========================================================
+    # CONSTRUÇÕES / CASAS / HOTEL
+    # ========================================================
+
+    def _build_house(self, action: Dict[str, Any]):
+        if self.phase != "ready_to_roll":
+            self.last_message = "Construções só podem ser feitas antes de rolar os dados."
+            return
+
+        prop_index = int(action.get("property_index", -1))
+
+        if prop_index < 0 or prop_index >= len(self.board):
+            self.last_message = "Propriedade inválida para construção."
+            return
+
+        space = self.board[prop_index]
+        player = self.current_player
+
+        if space.type != "property" or space.group is None:
+            self.last_message = "Essa casa não aceita construções."
+            return
+
+        if space.owner != self.current_player_index:
+            self.last_message = f"{player.name} não é dono de {space.name}."
+            return
+
+        if not self._owns_complete_group(self.current_player_index, space.group):
+            self.last_message = (
+                f"{player.name} precisa possuir todas as propriedades da região "
+                f"{space.group} para construir."
+            )
+            return
+
+        if space.houses >= MAX_HOUSES:
+            self.last_message = f"{space.name} já tem hotel."
+            return
+
+        if player.money < space.build_cost:
+            self.last_message = f"{player.name} não tem dinheiro para construir em {space.name}."
+            return
+
+        player.money -= space.build_cost
+        space.houses += 1
+
+        if space.houses >= MAX_HOUSES:
+            level_text = "hotel"
+        elif space.houses == 1:
+            level_text = "1 casa"
+        else:
+            level_text = f"{space.houses} casas"
+
+        new_rent = space.current_rent()
+        self.last_message = (
+            f"{player.name} construiu em {space.name}: {level_text}. "
+            f"Novo aluguel: ${new_rent}."
+        )
 
     # ========================================================
     # TROCAS
@@ -444,6 +572,7 @@ class BancoImobiliarioEnv:
         for space in self.board:
             if space.owner == player_index:
                 space.owner = None
+                space.houses = 0
 
         self.last_message += f" {player.name} faliu!"
 
@@ -478,8 +607,46 @@ class BancoImobiliarioEnv:
         for space in self.board:
             if space.type == "property" and space.owner == player_index:
                 total += space.price
+                total += space.houses * space.build_cost
 
         return total
+
+    def _strategic_reward(
+        self,
+        action_type: Optional[str],
+        before_completed_groups: int,
+        after_completed_groups: int,
+        before_total_houses: int,
+        after_total_houses: int,
+    ) -> float:
+        reward = 0.0
+
+        if action_type == BUY_PROPERTY:
+            reward += 2.0
+
+        if action_type == BUILD_HOUSE and after_total_houses > before_total_houses:
+            reward += 4.0
+
+        if action_type in (BUY_PROPERTY, ACCEPT_TRADE):
+            completed_delta = after_completed_groups - before_completed_groups
+            if completed_delta > 0:
+                reward += 12.0 * completed_delta
+
+        return reward
+
+    def _completed_group_count(self, player_index: int) -> int:
+        return sum(
+            1
+            for group in GROUPS
+            if self._owns_complete_group(player_index, group)
+        )
+
+    def _total_houses(self, player_index: int) -> int:
+        return sum(
+            space.houses
+            for space in self.board
+            if space.type == "property" and space.owner == player_index
+        )
 
     def _is_valid_property_owner(self, prop_index: int, owner_index: int) -> bool:
         if prop_index < 0 or prop_index >= len(self.board):
@@ -487,6 +654,77 @@ class BancoImobiliarioEnv:
 
         space = self.board[prop_index]
         return space.type == "property" and space.owner == owner_index
+
+
+    def _owns_complete_group(self, player_index: int, group: Optional[str]) -> bool:
+        if group is None or group not in GROUPS:
+            return False
+
+        return all(
+            self.board[prop_index].owner == player_index
+            for prop_index in GROUPS[group]
+        )
+
+    def _get_build_actions(self, player_index: int) -> List[Dict[str, Any]]:
+        player = self.players[player_index]
+
+        if player.bankrupt:
+            return []
+
+        actions = []
+
+        for prop_index, space in enumerate(self.board):
+            if space.type != "property":
+                continue
+
+            if space.group is None:
+                continue
+
+            if space.owner != player_index:
+                continue
+
+            if space.houses >= MAX_HOUSES:
+                continue
+
+            if player.money < space.build_cost:
+                continue
+
+            if not self._owns_complete_group(player_index, space.group):
+                continue
+
+            actions.append({"type": BUILD_HOUSE, "property_index": prop_index})
+
+        return actions
+
+    def get_rent_for_space(self, space: Space) -> int:
+        if space.type != "property":
+            return space.rent
+
+        rent = space.current_rent()
+
+        # Bônus de monopólio: se o jogador possui toda a região, o aluguel
+        # sem casas dobra. Com casas/hotel, o rent_schedule já representa o aumento.
+        if (
+            space.owner is not None
+            and space.houses == 0
+            and space.group is not None
+            and self._owns_complete_group(space.owner, space.group)
+        ):
+            return rent * 2
+
+        return rent
+
+    def _construction_label(self, space: Space) -> str:
+        if space.type != "property" or space.houses <= 0:
+            return ""
+
+        if space.houses >= MAX_HOUSES:
+            return " com hotel"
+
+        if space.houses == 1:
+            return " com 1 casa"
+
+        return f" com {space.houses} casas"
 
     def get_owned_properties(self, player_index: int) -> List[int]:
         return [
@@ -536,6 +774,27 @@ class BancoImobiliarioEnv:
         if not proposer_properties:
             return actions
 
+        seen_actions = set()
+
+        def add_action(action: Dict[str, Any]) -> bool:
+            key = (
+                action["target_player"],
+                tuple(sorted(action.get("offer_properties", []))),
+                tuple(sorted(action.get("request_properties", []))),
+                int(action.get("offer_money", 0)),
+                int(action.get("request_money", 0)),
+            )
+            if key in seen_actions:
+                return False
+
+            seen_actions.add(key)
+            actions.append(action)
+            return len(actions) >= max_actions
+
+        for action in self._get_region_completion_trade_actions(player_index):
+            if add_action(action):
+                return actions
+
         for target_index, target in enumerate(self.players):
             if target_index == player_index or target.bankrupt:
                 continue
@@ -555,7 +814,7 @@ class BancoImobiliarioEnv:
                 offer_money = min(offer_money, self.players[player_index].money)
                 request_money = min(request_money, target.money)
 
-                actions.append(
+                if add_action(
                     {
                         "type": PROPOSE_TRADE,
                         "target_player": target_index,
@@ -564,9 +823,101 @@ class BancoImobiliarioEnv:
                         "request_properties": [request_property],
                         "request_money": request_money,
                     }
-                )
-
-                if len(actions) >= max_actions:
+                ):
                     return actions
 
         return actions
+
+    def _get_region_completion_trade_actions(self, player_index: int) -> List[Dict[str, Any]]:
+        player = self.players[player_index]
+        actions = []
+
+        for group, group_properties in GROUPS.items():
+            owned_in_group = [
+                prop_index
+                for prop_index in group_properties
+                if self.board[prop_index].owner == player_index
+            ]
+            missing_owned_by_others = [
+                prop_index
+                for prop_index in group_properties
+                if self.board[prop_index].owner is not None
+                and self.board[prop_index].owner != player_index
+            ]
+
+            if not owned_in_group or not missing_owned_by_others:
+                continue
+
+            missing_count = len(group_properties) - len(owned_in_group)
+            if missing_count > 2:
+                continue
+
+            for request_property in missing_owned_by_others:
+                target_index = self.board[request_property].owner
+                target = self.players[target_index]
+
+                if target.bankrupt:
+                    continue
+
+                offer_property = self._choose_trade_offer_property(
+                    player_index,
+                    target_index,
+                    protected_group=group,
+                )
+                offer_properties = [] if offer_property is None else [offer_property]
+                offer_money = self._trade_offer_money(player_index, request_property, missing_count)
+
+                actions.append(
+                    {
+                        "type": PROPOSE_TRADE,
+                        "target_player": target_index,
+                        "offer_properties": offer_properties,
+                        "offer_money": offer_money,
+                        "request_properties": [request_property],
+                        "request_money": 0,
+                    }
+                )
+
+        return actions
+
+    def _choose_trade_offer_property(
+        self,
+        player_index: int,
+        target_index: int,
+        protected_group: str,
+    ) -> Optional[int]:
+        candidates = [
+            prop_index
+            for prop_index in self.get_owned_properties(player_index)
+            if self.board[prop_index].group != protected_group
+        ]
+
+        if not candidates:
+            return None
+
+        def offer_score(prop_index: int) -> tuple[int, int, int]:
+            space = self.board[prop_index]
+            target_group_count = 0
+
+            if space.group in GROUPS:
+                target_group_count = sum(
+                    1
+                    for group_prop_index in GROUPS[space.group]
+                    if self.board[group_prop_index].owner == target_index
+                )
+
+            return target_group_count, -space.price, -prop_index
+
+        return max(candidates, key=offer_score)
+
+    def _trade_offer_money(
+        self,
+        player_index: int,
+        request_property: int,
+        missing_count: int,
+    ) -> int:
+        player = self.players[player_index]
+        requested_space = self.board[request_property]
+        target_offer = requested_space.price if missing_count == 1 else requested_space.price // 2
+
+        return max(0, min(player.money, target_offer))

@@ -24,6 +24,7 @@ GREEN = (50, 170, 80)
 RED = (210, 60, 60)
 YELLOW = (230, 190, 60)
 ORANGE = (240, 140, 40)
+BROWN = (120, 70, 30)
 
 
 class PygameView:
@@ -37,16 +38,40 @@ class PygameView:
         self.small_font = pygame.font.SysFont("arial", 20)
         self.tiny_font = pygame.font.SysFont("arial", 14)
 
-    def handle_events(self) -> bool:
+    def handle_events(self) -> dict:
+        commands = {
+            "running": True,
+            "toggle_pause": False,
+            "step_once": False,
+            "speed_up": False,
+            "speed_down": False,
+            "reset": False,
+        }
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False
-        return True
+                commands["running"] = False
 
-    def draw(self, env):
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    commands["running"] = False
+                elif event.key == pygame.K_SPACE:
+                    commands["toggle_pause"] = True
+                elif event.key in (pygame.K_n, pygame.K_RIGHT):
+                    commands["step_once"] = True
+                elif event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
+                    commands["speed_up"] = True
+                elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+                    commands["speed_down"] = True
+                elif event.key == pygame.K_r:
+                    commands["reset"] = True
+
+        return commands
+
+    def draw(self, env, paused=False, step_delay=None):
         self.screen.fill((35, 120, 70))
         self._draw_board(env)
-        self._draw_side_panel(env)
+        self._draw_side_panel(env, paused=paused, step_delay=step_delay)
         pygame.display.flip()
         self.clock.tick(FPS)
 
@@ -91,7 +116,26 @@ class PygameView:
                 price_text = self.tiny_font.render(f"${space.price}", True, DARK_GRAY)
                 self.screen.blit(price_text, (rect.x + 3, rect.y + 34))
 
+                if getattr(space, "houses", 0) > 0:
+                    self._draw_construction_indicator(rect, space)
+
         self._draw_players(env)
+
+    def _draw_construction_indicator(self, rect, space):
+        houses = getattr(space, "houses", 0)
+
+        if houses >= 5:
+            label = "HOTEL"
+            color = RED
+        else:
+            label = f"{houses}C"
+            color = BROWN
+
+        indicator = pygame.Rect(rect.x + 3, rect.bottom - 16, rect.width - 6, 13)
+        pygame.draw.rect(self.screen, color, indicator, border_radius=3)
+        text = self.tiny_font.render(label, True, WHITE)
+        text_rect = text.get_rect(center=indicator.center)
+        self.screen.blit(text, text_rect)
 
     def _draw_players(self, env):
         offsets = [
@@ -122,7 +166,7 @@ class PygameView:
                 2,
             )
 
-    def _draw_side_panel(self, env):
+    def _draw_side_panel(self, env, paused=False, step_delay=None):
         panel = pygame.Rect(SIDE_PANEL_X, SIDE_PANEL_Y, SIDE_PANEL_WIDTH, SIDE_PANEL_HEIGHT)
         pygame.draw.rect(self.screen, WHITE, panel, border_radius=12)
         pygame.draw.rect(self.screen, BLACK, panel, 2, border_radius=12)
@@ -145,9 +189,31 @@ class PygameView:
         self.screen.blit(dice_text, (SIDE_PANEL_X + 20, y))
         y += 35
 
-        turn_count = self.small_font.render(f"Turnos processados: {env.turn_count}", True, BLACK)
+        status = "PAUSADO" if paused else "AUTO"
+        speed_text = "" if step_delay is None else f" | delay: {step_delay:.2f}s"
+        turn_count = self.small_font.render(
+            f"Turnos: {env.turn_count} | Ações: {getattr(env, 'action_count', 0)}",
+            True,
+            BLACK,
+        )
         self.screen.blit(turn_count, (SIDE_PANEL_X + 20, y))
-        y += 35
+        y += 28
+
+        mode_text = self.tiny_font.render(
+            f"Modo: {status}{speed_text}",
+            True,
+            DARK_GRAY,
+        )
+        self.screen.blit(mode_text, (SIDE_PANEL_X + 20, y))
+        y += 24
+
+        controls = self.tiny_font.render(
+            "SPACE pausa | N/→ avança | +/- velocidade | R reinicia",
+            True,
+            DARK_GRAY,
+        )
+        self.screen.blit(controls, (SIDE_PANEL_X + 20, y))
+        y += 28
 
         players_title = self.small_font.render("Jogadores:", True, BLACK)
         self.screen.blit(players_title, (SIDE_PANEL_X + 20, y))
@@ -155,7 +221,8 @@ class PygameView:
 
         for i, player in enumerate(env.players):
             props = len(env.get_owned_properties(i))
-            status = "FALIDO" if player.bankrupt else f"${player.money} | props: {props}"
+            houses = sum(getattr(space, "houses", 0) for space in env.board if getattr(space, "owner", None) == i)
+            status = "FALIDO" if player.bankrupt else f"${player.money} | props: {props} | constr: {houses}"
             text = self.small_font.render(f"{player.name}: {status}", True, player.color)
             self.screen.blit(text, (SIDE_PANEL_X + 20, y))
             y += 26
@@ -167,12 +234,12 @@ class PygameView:
         else:
             y = self._draw_current_space(env, y)
 
-        y += 20
+        y += 15
         message_title = self.small_font.render("Último acontecimento:", True, BLACK)
         self.screen.blit(message_title, (SIDE_PANEL_X + 20, y))
-        y += 28
+        y += 25
 
-        draw_wrapped_text(
+        y = draw_wrapped_text(
             self.screen,
             env.last_message,
             SIDE_PANEL_X + 20,
@@ -180,8 +247,29 @@ class PygameView:
             SIDE_PANEL_WIDTH - 40,
             self.tiny_font,
             BLACK,
-            19,
+            18,
+            max_lines=3,
         )
+
+        y += 12
+        history_title = self.small_font.render("Histórico recente:", True, BLACK)
+        self.screen.blit(history_title, (SIDE_PANEL_X + 20, y))
+        y += 24
+
+        for event in getattr(env, "event_history", [])[-6:]:
+            line = f"#{event['number']} T{event['turn']} {event['player']}: {event['message']}"
+            y = draw_wrapped_text(
+                self.screen,
+                line,
+                SIDE_PANEL_X + 20,
+                y,
+                SIDE_PANEL_WIDTH - 40,
+                self.tiny_font,
+                DARK_GRAY,
+                16,
+                max_lines=2,
+            )
+            y += 4
 
         if env.done:
             winner_text = self.font.render("JOGO FINALIZADO", True, RED)
@@ -204,9 +292,14 @@ class PygameView:
             owner_name = "Nenhum"
             if space.owner is not None:
                 owner_name = env.players[space.owner].name
+            construction = "hotel" if getattr(space, "houses", 0) >= 5 else f"{getattr(space, 'houses', 0)} casas"
+            current_rent = env.get_rent_for_space(space) if hasattr(env, "get_rent_for_space") else (space.current_rent() if hasattr(space, "current_rent") else space.rent)
             lines.extend([
+                f"Região: {space.group or '-'}",
                 f"Preço: ${space.price}",
-                f"Aluguel: ${space.rent}",
+                f"Aluguel atual: ${current_rent}",
+                f"Construção: {construction}",
+                f"Custo construção: ${getattr(space, 'build_cost', 0)}",
                 f"Dono: {owner_name}",
             ])
 
@@ -257,9 +350,10 @@ def get_space_rect(index):
     return pygame.Rect(x, y, cell, cell)
 
 
-def draw_wrapped_text(screen, text, x, y, max_width, font, color, line_height=22):
-    words = text.split(" ")
+def draw_wrapped_text(screen, text, x, y, max_width, font, color, line_height=22, max_lines=None):
+    words = str(text).split(" ")
     line = ""
+    lines_drawn = 0
 
     for word in words:
         test_line = line + word + " "
@@ -268,11 +362,18 @@ def draw_wrapped_text(screen, text, x, y, max_width, font, color, line_height=22
         if width <= max_width:
             line = test_line
         else:
+            if max_lines is not None and lines_drawn >= max_lines:
+                return y
+
             rendered = font.render(line, True, color)
             screen.blit(rendered, (x, y))
             y += line_height
+            lines_drawn += 1
             line = word + " "
 
-    if line:
+    if line and (max_lines is None or lines_drawn < max_lines):
         rendered = font.render(line, True, color)
         screen.blit(rendered, (x, y))
+        y += line_height
+
+    return y
