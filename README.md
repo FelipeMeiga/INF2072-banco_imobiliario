@@ -468,6 +468,20 @@ Atualmente:
 Isso reduz mais cedo a fase em que os agentes tomam decisoes quase totalmente
 aleatorias.
 
+## Hiperparametros atuais
+
+Para reduzir instabilidade do DQN, o treino usa:
+
+- `LEARNING_RATE = 3e-5`;
+- `BATCH_SIZE = 128`;
+- `OPTIMIZE_EVERY_STEPS = 20`;
+- `TARGET_UPDATE_EVERY = 50`;
+- `GAMMA = 0.98`;
+- reward clipado entre `-10` e `+10` antes de entrar no replay buffer.
+
+O reward bruto ainda vem do ambiente, mas o valor usado para treinar e somar no
+log do episodio e limitado. Isso reduz saltos grandes nos Q-values.
+
 ## Checkpoints
 
 O modelo principal e salvo em:

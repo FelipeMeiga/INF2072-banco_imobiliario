@@ -22,11 +22,13 @@ from tournament import discover_checkpoints, load_competitors, print_scoreboard,
 
 
 GAMMA = 0.98
-BATCH_SIZE = 32
-LEARNING_RATE = 1e-4
-TARGET_UPDATE_EVERY = 20
+BATCH_SIZE = 128
+LEARNING_RATE = 3e-5
+TARGET_UPDATE_EVERY = 50
 SAVE_EVERY = 50
-OPTIMIZE_EVERY_STEPS = 200
+OPTIMIZE_EVERY_STEPS = 20
+REWARD_CLIP_MIN = -10.0
+REWARD_CLIP_MAX = 10.0
 
 
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
@@ -250,7 +252,8 @@ def train(
             action_vec = encode_action(action)
             state_action_vec = np.concatenate([state_vec, action_vec], axis=0)
 
-            next_state, reward, done, info = env.step(action)
+            next_state, raw_reward, done, info = env.step(action)
+            reward = max(REWARD_CLIP_MIN, min(REWARD_CLIP_MAX, raw_reward))
 
             next_acting_player = get_acting_player(env)
             next_valid_actions = env.get_valid_actions(next_acting_player)
