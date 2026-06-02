@@ -11,9 +11,11 @@ import numpy as np
 @dataclass
 class Transition:
     state_action: np.ndarray
+    acting_player: int
     reward: float
     next_state: np.ndarray
     next_actions: List[np.ndarray]
+    next_acting_player: int
     done: bool
 
 

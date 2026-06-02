@@ -29,6 +29,7 @@ SAVE_EVERY = 50
 OPTIMIZE_EVERY_STEPS = 20
 REWARD_CLIP_MIN = -10.0
 REWARD_CLIP_MAX = 10.0
+OPPONENT_Q_WEIGHT = 0.75
 
 
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
@@ -100,11 +101,19 @@ def optimize_model(
             all_next_tensor = torch.tensor(all_next, dtype=torch.float32, device=device)
             all_next_q = target_net(all_next_tensor).detach().cpu().numpy()
 
+            best_next_q_by_transition: Dict[int, float] = {}
             for q_value, transition_index in zip(all_next_q, row_to_transition_index):
-                next_q_values[transition_index] = max(
-                    next_q_values[transition_index],
+                best_next_q_by_transition[transition_index] = max(
+                    best_next_q_by_transition.get(transition_index, float("-inf")),
                     float(q_value),
                 )
+
+            for transition_index, best_next_q in best_next_q_by_transition.items():
+                transition = transitions[transition_index]
+                if transition.next_acting_player == transition.acting_player:
+                    next_q_values[transition_index] = best_next_q
+                else:
+                    next_q_values[transition_index] = -OPPONENT_Q_WEIGHT * best_next_q
 
     next_q = torch.tensor(next_q_values, dtype=torch.float32, device=device)
     expected_q = rewards + (1.0 - dones) * GAMMA * next_q
@@ -263,9 +272,11 @@ def train(
             replay_buffer.push(
                 Transition(
                     state_action=state_action_vec,
+                    acting_player=acting_player,
                     reward=reward,
                     next_state=next_state_vec,
                     next_actions=next_action_vecs,
+                    next_acting_player=next_acting_player,
                     done=done,
                 )
             )

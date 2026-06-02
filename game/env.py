@@ -937,14 +937,23 @@ class BancoImobiliarioEnv:
             return
 
         for prop_index in offer_properties:
-            if not self._is_valid_property_owner(prop_index, proposer_index):
-                self.last_message = "Uma propriedade oferecida nao pertence ao jogador atual."
+            if not self._is_tradeable_property(prop_index, proposer_index):
+                self.last_message = "Uma propriedade oferecida nao pode ser negociada."
                 return
 
         for prop_index in request_properties:
-            if not self._is_valid_property_owner(prop_index, target_index):
-                self.last_message = "Uma propriedade pedida nao pertence ao jogador alvo."
+            if not self._is_tradeable_property(prop_index, target_index):
+                self.last_message = "Uma propriedade pedida nao pode ser negociada."
                 return
+
+        if not self._has_meaningful_trade_consideration(
+            offer_properties,
+            offer_money,
+            request_properties,
+            request_money,
+        ):
+            self.last_message = "Troca ignorada por falta de contrapartida real."
+            return
 
         self.pending_trade = {
             "from": proposer_index,
@@ -975,14 +984,14 @@ class BancoImobiliarioEnv:
             return
 
         for prop_index in trade["offer_properties"]:
-            if not self._is_valid_property_owner(prop_index, proposer_index):
-                self.last_message = "Troca cancelada: propriedade oferecida mudou de dono."
+            if not self._is_tradeable_property(prop_index, proposer_index):
+                self.last_message = "Troca cancelada: propriedade oferecida nao pode ser negociada."
                 self._clear_trade()
                 return
 
         for prop_index in trade["request_properties"]:
-            if not self._is_valid_property_owner(prop_index, target_index):
-                self.last_message = "Troca cancelada: propriedade pedida mudou de dono."
+            if not self._is_tradeable_property(prop_index, target_index):
+                self.last_message = "Troca cancelada: propriedade pedida nao pode ser negociada."
                 self._clear_trade()
                 return
 
@@ -1380,6 +1389,27 @@ class BancoImobiliarioEnv:
             and self.board[prop_index].owner == owner_index
         )
 
+    def _is_tradeable_property(self, prop_index: int, owner_index: int) -> bool:
+        if not self._is_valid_property_owner(prop_index, owner_index):
+            return False
+
+        space = self.board[prop_index]
+        if space.type == "property" and self._group_has_buildings(space.group):
+            return False
+
+        return True
+
+    def _has_meaningful_trade_consideration(
+        self,
+        offer_properties: List[int],
+        offer_money: int,
+        request_properties: List[int],
+        request_money: int,
+    ) -> bool:
+        proposer_gives = bool(offer_properties) or offer_money > 0
+        target_gives = bool(request_properties) or request_money > 0
+        return proposer_gives and target_gives
+
     def _group_has_buildings(self, group: Optional[str]) -> bool:
         return bool(group and any(self.board[i].houses > 0 for i in GROUPS.get(group, [])))
 
@@ -1502,6 +1532,13 @@ class BancoImobiliarioEnv:
             if space.is_ownable() and space.owner == player_index
         ]
 
+    def get_tradeable_properties(self, player_index: int) -> List[int]:
+        return [
+            i
+            for i, space in enumerate(self.board)
+            if space.is_ownable() and self._is_tradeable_property(i, player_index)
+        ]
+
     def describe_pending_trade(self) -> List[str]:
         if not self.pending_trade:
             return []
@@ -1528,10 +1565,11 @@ class BancoImobiliarioEnv:
 
     def _sample_trade_actions(self, player_index: int, max_actions: int = 6) -> List[Dict[str, Any]]:
         actions = []
-        proposer_properties = self.get_owned_properties(player_index)
+        proposer_properties = self.get_tradeable_properties(player_index)
         if not proposer_properties:
             return actions
 
+        rng = self._trade_action_random(player_index)
         seen_actions = set()
 
         def add_action(action: Dict[str, Any]) -> bool:
@@ -1556,15 +1594,15 @@ class BancoImobiliarioEnv:
             if target_index == player_index or target.bankrupt:
                 continue
 
-            target_properties = self.get_owned_properties(target_index)
+            target_properties = self.get_tradeable_properties(target_index)
             if not target_properties:
                 continue
 
             for _ in range(2):
-                offer_property = self.random.choice(proposer_properties)
-                request_property = self.random.choice(target_properties)
-                offer_money = min(self.random.choice([0, 50, 100, 150]), self.players[player_index].money)
-                request_money = min(self.random.choice([0, 50, 100]), target.money)
+                offer_property = rng.choice(proposer_properties)
+                request_property = rng.choice(target_properties)
+                offer_money = min(rng.choice([0, 50, 100, 150]), self.players[player_index].money)
+                request_money = min(rng.choice([0, 50, 100]), target.money)
                 if add_action(
                     {
                         "type": PROPOSE_TRADE,
@@ -1579,14 +1617,41 @@ class BancoImobiliarioEnv:
 
         return actions
 
+    def _trade_action_random(self, player_index: int) -> random.Random:
+        ownership = tuple(
+            space.owner if space.is_ownable() else -2
+            for space in self.board
+        )
+        buildings = tuple(
+            space.houses if space.type == "property" else 0
+            for space in self.board
+        )
+        seed_data = (
+            self.seed,
+            player_index,
+            self.turn_count,
+            self.action_count,
+            self.phase,
+            tuple(player.position for player in self.players),
+            tuple(player.money for player in self.players),
+            ownership,
+            buildings,
+        )
+        return random.Random(repr(seed_data))
+
     def _get_region_completion_trade_actions(self, player_index: int) -> List[Dict[str, Any]]:
         actions = []
         for group, group_properties in GROUPS.items():
+            if self._group_has_buildings(group):
+                continue
+
             owned = [i for i in group_properties if self.board[i].owner == player_index]
             missing = [
                 i
                 for i in group_properties
-                if self.board[i].owner is not None and self.board[i].owner != player_index
+                if self.board[i].owner is not None
+                and self.board[i].owner != player_index
+                and self._is_tradeable_property(i, self.board[i].owner)
             ]
             if not owned or not missing or len(group_properties) - len(owned) > 2:
                 continue
@@ -1596,6 +1661,8 @@ class BancoImobiliarioEnv:
                 offer_property = self._choose_trade_offer_property(player_index, target_index, protected_group=group)
                 offer_properties = [] if offer_property is None else [offer_property]
                 offer_money = self._trade_offer_money(player_index, request_property, len(group_properties) - len(owned))
+                if not offer_properties and offer_money <= 0:
+                    continue
                 actions.append(
                     {
                         "type": PROPOSE_TRADE,
@@ -1611,7 +1678,7 @@ class BancoImobiliarioEnv:
     def _choose_trade_offer_property(self, player_index: int, target_index: int, protected_group: str) -> Optional[int]:
         candidates = [
             prop_index
-            for prop_index in self.get_owned_properties(player_index)
+            for prop_index in self.get_tradeable_properties(player_index)
             if self.board[prop_index].group != protected_group
         ]
         if not candidates:

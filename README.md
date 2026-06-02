@@ -207,6 +207,22 @@ As acoes sao dicionarios estruturados. Exemplos:
 }
 ```
 
+## Regras de troca
+
+As trocas sao validadas pelo ambiente antes de virarem troca pendente.
+
+Regras importantes:
+
+- propriedades de um grupo com casas ou hotel nao podem ser negociadas;
+- uma troca precisa ter contrapartida dos dois lados;
+- doacoes unilaterais de dinheiro/propriedade sao bloqueadas;
+- propriedades hipotecadas podem ser negociadas;
+- ao receber propriedade hipotecada, o novo dono paga os juros de transferencia
+  quando aplicavel.
+
+Essas regras evitam casos como um jogador doar terreno sem motivo ou transferir
+um grupo construido mantendo casas no terreno.
+
 ## Anti-loops financeiros
 
 Para evitar loops artificiais como:
@@ -431,6 +447,26 @@ O alvo:
 expected_q = reward + gamma * max Q(proximo_estado, proxima_acao)
 ```
 
+Em jogo multiagente, existe um ajuste adversarial:
+
+- se o proximo jogador a agir for o mesmo jogador, o melhor Q futuro entra como
+  oportunidade;
+- se o proximo jogador for um adversario, o melhor Q dele entra como ameaca e
+  e subtraido parcialmente do alvo.
+
+Na pratica:
+
+```text
+mesmo jogador:
+expected_q = reward + gamma * max Q(proximo_estado, minha_proxima_acao)
+
+adversario:
+expected_q = reward - gamma * OPPONENT_Q_WEIGHT * max Q(proximo_estado, acao_do_adversario)
+```
+
+Isso faz o DQN levar em conta que uma acao aparentemente boa pode entregar uma
+resposta forte para outro jogador.
+
 Se a partida acabou:
 
 ```text
@@ -477,6 +513,7 @@ Para reduzir instabilidade do DQN, o treino usa:
 - `OPTIMIZE_EVERY_STEPS = 20`;
 - `TARGET_UPDATE_EVERY = 50`;
 - `GAMMA = 0.98`;
+- `OPPONENT_Q_WEIGHT = 0.75`;
 - reward clipado entre `-10` e `+10` antes de entrar no replay buffer.
 
 O reward bruto ainda vem do ambiente, mas o valor usado para treinar e somar no
