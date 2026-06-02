@@ -25,6 +25,7 @@ RED = (210, 60, 60)
 YELLOW = (230, 190, 60)
 ORANGE = (240, 140, 40)
 BROWN = (120, 70, 30)
+PANEL_BG = (255, 252, 238)
 
 
 class PygameView:
@@ -74,6 +75,7 @@ class PygameView:
     def draw(self, env, paused=False, step_delay=None):
         self.screen.fill((35, 120, 70))
         self._draw_board(env)
+        self._draw_center_trade(env)
         self._draw_side_panel(env, paused=paused, step_delay=step_delay)
         pygame.display.flip()
         self.clock.tick(FPS)
@@ -168,6 +170,127 @@ class PygameView:
                 9,
                 2,
             )
+
+    def _draw_center_trade(self, env):
+        cell = BOARD_SIZE // 11
+        inner_rect = pygame.Rect(
+            BOARD_X + cell + 18,
+            BOARD_Y + cell + 18,
+            BOARD_SIZE - (cell + 18) * 2,
+            BOARD_SIZE - (cell + 18) * 2,
+        )
+        panel_width = min(470, inner_rect.width)
+        panel_height = min(390, inner_rect.height)
+        panel = pygame.Rect(0, 0, panel_width, panel_height)
+        panel.center = inner_rect.center
+
+        shadow = panel.move(6, 7)
+        pygame.draw.rect(self.screen, (25, 55, 35), shadow, border_radius=8)
+        pygame.draw.rect(self.screen, PANEL_BG, panel, border_radius=8)
+        pygame.draw.rect(self.screen, BLACK, panel, 2, border_radius=8)
+
+        pending_trade = getattr(env, "pending_trade", None)
+        last_trade_result = getattr(env, "last_trade_result", None)
+        trade = pending_trade or last_trade_result
+
+        y = panel.y + 16
+        title = self.font.render("Trocas", True, BLACK)
+        title_rect = title.get_rect(center=(panel.centerx, y + 16))
+        self.screen.blit(title, title_rect)
+        y += 42
+
+        if not trade:
+            return
+
+        proposer = env.players[trade["from"]]
+        target = env.players[trade["to"]]
+
+        if pending_trade:
+            subtitle_text = f"{proposer.name} -> {target.name}"
+            subtitle_color = DARK_GRAY
+        else:
+            status = trade.get("status")
+            status_text = "aceita" if status == "accepted" else "recusada"
+            subtitle_text = f"Ultima troca: {status_text}"
+            subtitle_color = GREEN if status == "accepted" else RED
+
+        subtitle = self.small_font.render(subtitle_text, True, subtitle_color)
+        subtitle_rect = subtitle.get_rect(center=(panel.centerx, y + 12))
+        self.screen.blit(subtitle, subtitle_rect)
+        y += 34
+
+        if not pending_trade:
+            matchup = self.tiny_font.render(
+                f"{proposer.name} -> {target.name}",
+                True,
+                DARK_GRAY,
+            )
+            matchup_rect = matchup.get_rect(center=(panel.centerx, y - 5))
+            self.screen.blit(matchup, matchup_rect)
+
+        column_gap = 18
+        column_width = (panel.width - 44 - column_gap) // 2
+        left = pygame.Rect(panel.x + 18, y, column_width, panel.bottom - y - 18)
+        right = pygame.Rect(left.right + column_gap, y, column_width, left.height)
+
+        self._draw_trade_column(
+            title="Oferece",
+            player=proposer,
+            properties=trade["offer_properties"],
+            money=trade["offer_money"],
+            env=env,
+            rect=left,
+        )
+        self._draw_trade_column(
+            title="Pede",
+            player=target,
+            properties=trade["request_properties"],
+            money=trade["request_money"],
+            env=env,
+            rect=right,
+        )
+
+    def _draw_trade_column(self, title, player, properties, money, env, rect):
+        pygame.draw.rect(self.screen, WHITE, rect, border_radius=6)
+        pygame.draw.rect(self.screen, player.color, rect, 2, border_radius=6)
+
+        y = rect.y + 10
+        title_text = self.small_font.render(title, True, player.color)
+        self.screen.blit(title_text, (rect.x + 10, y))
+        y += 28
+
+        money_text = self.small_font.render(f"Dinheiro: ${money}", True, BLACK)
+        self.screen.blit(money_text, (rect.x + 10, y))
+        y += 30
+
+        props_title = self.tiny_font.render("Itens:", True, DARK_GRAY)
+        self.screen.blit(props_title, (rect.x + 10, y))
+        y += 20
+
+        if properties:
+            for prop_index in properties[:7]:
+                space = env.board[prop_index]
+                prefix = f"{prop_index:02d}"
+                line = f"{prefix} - {space.name}"
+                y = draw_wrapped_text(
+                    self.screen,
+                    line,
+                    rect.x + 10,
+                    y,
+                    rect.width - 20,
+                    self.tiny_font,
+                    BLACK,
+                    16,
+                    max_lines=2,
+                )
+                y += 3
+                if y > rect.bottom - 22:
+                    more = self.tiny_font.render("...", True, DARK_GRAY)
+                    self.screen.blit(more, (rect.x + 10, rect.bottom - 20))
+                    break
+        else:
+            none_text = self.tiny_font.render("Nenhuma propriedade", True, DARK_GRAY)
+            self.screen.blit(none_text, (rect.x + 10, y))
 
     def _draw_side_panel(self, env, paused=False, step_delay=None):
         panel = pygame.Rect(SIDE_PANEL_X, SIDE_PANEL_Y, SIDE_PANEL_WIDTH, SIDE_PANEL_HEIGHT)

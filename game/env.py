@@ -92,6 +92,7 @@ class BancoImobiliarioEnv:
         self.extra_turn_pending = False
         self.phase = "ready_to_roll"
         self.pending_trade: Optional[Dict[str, Any]] = None
+        self.last_trade_result: Optional[Dict[str, Any]] = None
         self.auction: Optional[Dict[str, Any]] = None
         self.trade_proposed_this_turn = False
         self.properties_sold_buildings_this_turn: set[int] = set()
@@ -145,6 +146,7 @@ class BancoImobiliarioEnv:
                 for space in self.board
             ],
             "pending_trade": copy.deepcopy(self.pending_trade),
+            "last_trade_result": copy.deepcopy(self.last_trade_result),
             "auction": copy.deepcopy(self.auction),
             "bank_houses": self.bank_houses,
             "bank_hotels": self.bank_hotels,
@@ -328,6 +330,7 @@ class BancoImobiliarioEnv:
             "extra_turn_pending": self.extra_turn_pending,
             "phase": self.phase,
             "pending_trade": copy.deepcopy(self.pending_trade),
+            "last_trade_result": copy.deepcopy(self.last_trade_result),
             "auction": copy.deepcopy(self.auction),
             "trade_proposed_this_turn": self.trade_proposed_this_turn,
             "properties_sold_buildings_this_turn": copy.deepcopy(self.properties_sold_buildings_this_turn),
@@ -356,6 +359,7 @@ class BancoImobiliarioEnv:
         self.extra_turn_pending = snapshot["extra_turn_pending"]
         self.phase = snapshot["phase"]
         self.pending_trade = copy.deepcopy(snapshot["pending_trade"])
+        self.last_trade_result = copy.deepcopy(snapshot.get("last_trade_result"))
         self.auction = copy.deepcopy(snapshot["auction"])
         self.trade_proposed_this_turn = snapshot["trade_proposed_this_turn"]
         self.properties_sold_buildings_this_turn = copy.deepcopy(snapshot["properties_sold_buildings_this_turn"])
@@ -963,6 +967,7 @@ class BancoImobiliarioEnv:
             "offer_money": offer_money,
             "request_money": request_money,
         }
+        self.last_trade_result = None
         self.phase = "pending_trade_response"
         self.trade_proposed_this_turn = True
         self.last_message = f"{proposer.name} propos uma troca para {target.name}."
@@ -1009,6 +1014,7 @@ class BancoImobiliarioEnv:
             self._charge_mortgage_transfer_interest(proposer_index, prop_index)
 
         self.last_message = f"{target.name} aceitou a troca de {proposer.name}."
+        self._set_last_trade_result("accepted", trade, self.last_message)
         self._clear_trade()
 
     def _decline_trade(self):
@@ -1019,11 +1025,17 @@ class BancoImobiliarioEnv:
         proposer = self.players[self.pending_trade["from"]]
         target = self.players[self.pending_trade["to"]]
         self.last_message = f"{target.name} recusou a troca de {proposer.name}."
+        self._set_last_trade_result("declined", self.pending_trade, self.last_message)
         self._clear_trade()
 
     def _clear_trade(self):
         self.pending_trade = None
         self.phase = "ready_to_roll"
+
+    def _set_last_trade_result(self, status: str, trade: Dict[str, Any], message: str):
+        self.last_trade_result = copy.deepcopy(trade)
+        self.last_trade_result["status"] = status
+        self.last_trade_result["message"] = message
 
     # ========================================================
     # Cards
