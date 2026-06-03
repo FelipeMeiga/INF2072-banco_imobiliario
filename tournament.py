@@ -13,6 +13,7 @@ import torch
 torch.set_num_threads(1)
 
 from agents.neural_agent import NeuralAgent, QNetwork
+from agents.ppo_agent import PPOActorCritic, PPOAgent
 from agents.random_agent import RandomAgent
 from game.encoders import ACTION_SIZE, STATE_SIZE
 from game.env import BancoImobiliarioEnv
@@ -23,7 +24,7 @@ class Competitor:
     name: str
     kind: str
     path: Optional[str] = None
-    model: Optional[QNetwork] = None
+    model: Optional[object] = None
     episode: Optional[int] = None
 
 
@@ -112,15 +113,23 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
         )
         return None
 
-    model = QNetwork().to(device)
+    algorithm = checkpoint.get("algorithm", "dqn")
+    if algorithm == "ppo":
+        model = PPOActorCritic().to(device)
+        kind = "ppo"
+    else:
+        model = QNetwork().to(device)
+        kind = "dqn"
+
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
 
     episode = checkpoint.get("episode")
-    suffix = f"ep{episode:04d}" if isinstance(episode, int) else Path(path).stem
+    prefix = "ppo" if kind == "ppo" else "dqn"
+    suffix = f"{prefix}_ep{episode:04d}" if isinstance(episode, int) else Path(path).stem
     return Competitor(
         name=suffix,
-        kind="dqn",
+        kind=kind,
         path=path,
         model=model,
         episode=episode if isinstance(episode, int) else None,
@@ -133,6 +142,15 @@ def make_agent(competitor: Competitor, seat: int, seed: int, device: str):
 
     if competitor.kind == "heuristic":
         return RandomAgent(player_id=seat, seed=seed)
+
+    if competitor.kind == "ppo":
+        assert competitor.model is not None
+        return PPOAgent(
+            player_id=seat,
+            model=competitor.model,
+            device=device,
+            deterministic=True,
+        )
 
     assert competitor.model is not None
     return NeuralAgent(
@@ -278,7 +296,7 @@ def print_scoreboard(stats: Dict[str, CompetitorStats], limit: Optional[int] = N
     if limit is not None:
         rows = rows[:limit]
 
-    print("Campeonato DQN")
+    print("Campeonato de checkpoints")
     print("rank | competidor       | jogos | vitorias | win%   | pos_med | patrimonio | score")
     for rank, (name, competitor_stats) in enumerate(rows, start=1):
         print(

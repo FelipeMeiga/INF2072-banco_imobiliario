@@ -58,6 +58,7 @@ STATE_SIZE = (
     + 4
     + 4
     + 4
+    + (4 * 6)
     + (NUM_SPACES * 6)
     + NUM_SPACES
     + NUM_SPACES
@@ -125,6 +126,36 @@ def encode_state(state: Dict[str, Any], num_players: int = 4) -> np.ndarray:
     while len(jail_cards) < 4:
         jail_cards.append(0)
     values.extend([float(c) / 2.0 for c in jail_cards])
+
+    net_worth = list(state.get("player_net_worth", []))[:4]
+    while len(net_worth) < 4:
+        net_worth.append(0)
+    values.extend([max(-1.0, min(3.0, float(v) / 3000.0)) for v in net_worth])
+
+    completed_groups = list(state.get("player_completed_groups", []))[:4]
+    while len(completed_groups) < 4:
+        completed_groups.append(0)
+    values.extend([float(v) / 8.0 for v in completed_groups])
+
+    near_groups = list(state.get("player_near_groups", []))[:4]
+    while len(near_groups) < 4:
+        near_groups.append(0)
+    values.extend([float(v) / 8.0 for v in near_groups])
+
+    blocking_properties = list(state.get("player_blocking_properties", []))[:4]
+    while len(blocking_properties) < 4:
+        blocking_properties.append(0)
+    values.extend([float(v) / 8.0 for v in blocking_properties])
+
+    highest_rent = list(state.get("player_highest_rent_potential", []))[:4]
+    while len(highest_rent) < 4:
+        highest_rent.append(0)
+    values.extend([float(v) / 2000.0 for v in highest_rent])
+
+    group_progress = list(state.get("player_group_progress", []))[:4]
+    while len(group_progress) < 4:
+        group_progress.append(0)
+    values.extend([float(v) for v in group_progress])
 
     # Para cada casa, codifica o dono:
     # 0 = não é propriedade

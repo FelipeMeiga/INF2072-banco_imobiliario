@@ -11,6 +11,7 @@ import torch
 torch.set_num_threads(1)
 
 from agents.neural_agent import NeuralAgent, QNetwork
+from agents.ppo_agent import PPOActorCritic, PPOAgent
 from game.env import BancoImobiliarioEnv
 from ui.pygame_view import PygameView
 
@@ -19,7 +20,9 @@ MIN_STEP_DELAY_SECONDS = 0.03
 MAX_STEP_DELAY_SECONDS = 2.0
 START_PAUSED = True
 FIXED_SEED_ENV = "BANCO_SEED"
-MODEL_PATH = "models/best_dqn_agent.pt"
+MODEL_PATH_ENV = "BANCO_MODEL_PATH"
+PPO_MODEL_PATH = "models/best_ppo_agent.pt"
+DQN_MODEL_PATH = "models/best_dqn_agent.pt"
 
 
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
@@ -37,42 +40,77 @@ def make_game_seed() -> int:
     return random.SystemRandom().randint(0, 2**31 - 1)
 
 
+def resolve_model_path() -> str | None:
+    explicit_path = os.environ.get(MODEL_PATH_ENV)
+    if explicit_path:
+        return explicit_path
+    if os.path.exists(PPO_MODEL_PATH):
+        return PPO_MODEL_PATH
+    if os.path.exists(DQN_MODEL_PATH):
+        return DQN_MODEL_PATH
+    return None
+
+
+def make_untrained_agents():
+    model = PPOActorCritic()
+    return [
+        PPOAgent(player_id=i, model=model, deterministic=False)
+        for i in range(4)
+    ]
+
+
+def load_agents(model_path: str, game_seed: int):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    checkpoint = torch.load(model_path, map_location=device)
+    algorithm = checkpoint.get("algorithm", "dqn")
+
+    if algorithm == "ppo":
+        model = PPOActorCritic().to(device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        model.eval()
+        agents = [
+            PPOAgent(player_id=i, model=model, device=device, deterministic=True)
+            for i in range(4)
+        ]
+        return agents, "PPO"
+
+    model = QNetwork().to(device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
+    agents = [
+        NeuralAgent(player_id=i, model=model, epsilon=0.02, device=device, seed=game_seed + i)
+        for i in range(4)
+    ]
+    return agents, "DQN"
+
+
 def make_env_and_agents():
     game_seed = make_game_seed()
     print(f"Seed da partida: {game_seed}")
     env = BancoImobiliarioEnv(num_players=4, seed=game_seed, enable_undo=True)
-    model = QNetwork()
 
-    agents = [NeuralAgent(player_id=i, model=model, epsilon=0.02, seed=game_seed + i) for i in range(4)]
-
-    if os.path.exists(MODEL_PATH):
+    model_path = resolve_model_path()
+    if model_path is not None and os.path.exists(model_path):
         try:
-            print(f"Carregando modelo treinado: {MODEL_PATH}")
-            agents[0].load(MODEL_PATH)
-        except RuntimeError as exc:
-            print("Não foi possível carregar o modelo antigo.")
-            print("Isso é esperado se você treinou antes da mecânica de casas/hotel.")
-            print("Treine novamente com: python train_dqn.py --episodes 300")
-            print(f"Detalhe técnico: {exc}")
-            agents = [NeuralAgent(player_id=i, model=model, epsilon=0.25, seed=game_seed + i) for i in range(4)]
+            agents, algorithm = load_agents(model_path, game_seed)
+            print(f"Carregando modelo {algorithm}: {model_path}")
+        except (RuntimeError, KeyError, ValueError) as exc:
+            print("Nao foi possivel carregar o modelo salvo.")
+            print("Isso e esperado apos mudancas no estado, nas acoes ou na arquitetura.")
+            print("Treine novamente com: python train_ppo.py --episodes 300")
+            print(f"Detalhe tecnico: {exc}")
+            agents = make_untrained_agents()
     else:
-        print("Modelo treinado não encontrado. Rodando rede não treinada.")
-        print("Para treinar: python train_dqn.py --episodes 300")
-        agents = [NeuralAgent(player_id=i, model=model, epsilon=0.25, seed=game_seed + i) for i in range(4)]
-
-    # Todos os agentes compartilham a mesma rede.
-    # Isso representa self-play com uma política única sendo usada por todos os jogadores.
-    shared_model = agents[0].model
-    for agent in agents:
-        agent.model = shared_model
-        agent.model.eval()
+        print("Modelo treinado nao encontrado. Rodando PPO nao treinado.")
+        print("Para treinar: python train_ppo.py --episodes 300")
+        agents = make_untrained_agents()
 
     return env, agents
 
 
 def run_one_ai_action(
     env: BancoImobiliarioEnv,
-    agents: List[NeuralAgent],
+    agents: List[Any],
     replay_actions: List[Dict[str, Any]],
     replay_cursor: int,
 ) -> int:

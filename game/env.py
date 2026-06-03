@@ -40,6 +40,12 @@ JAIL_FINE = 50
 MAX_TURNS = 2000
 DEFENSIVE_CASH_THRESHOLD = 0
 UNMORTGAGE_CASH_RESERVE = 300
+TRADE_MAX_OPPONENT_EDGE = 450
+TRADE_MIN_PROPOSER_DELTA = -250
+TRADE_FAIRNESS_MARGIN = 180
+CRITICAL_BUY_CASH_RESERVE = 75
+AUCTION_BLOCK_VALUE_MULTIPLIER = 2.25
+AUCTION_COMPLETE_VALUE_MULTIPLIER = 1.90
 
 PLAYER_COLORS = [
     (70, 120, 220),
@@ -145,6 +151,12 @@ class BancoImobiliarioEnv:
                 space.group if space.type == "property" else None
                 for space in self.board
             ],
+            "player_net_worth": [self._net_worth(i) for i in range(self.num_players)],
+            "player_completed_groups": [self._completed_group_count(i) for i in range(self.num_players)],
+            "player_near_groups": [self._near_group_count(i) for i in range(self.num_players)],
+            "player_blocking_properties": [self._blocking_property_count(i) for i in range(self.num_players)],
+            "player_highest_rent_potential": [self._highest_rent_potential(i) for i in range(self.num_players)],
+            "player_group_progress": [self._best_group_progress(i) for i in range(self.num_players)],
             "pending_trade": copy.deepcopy(self.pending_trade),
             "last_trade_result": copy.deepcopy(self.last_trade_result),
             "auction": copy.deepcopy(self.auction),
@@ -180,6 +192,8 @@ class BancoImobiliarioEnv:
             return []
 
         if self.phase == "awaiting_buy":
+            if self._should_force_buy_property(player_index):
+                return [{"type": BUY_PROPERTY}]
             return [{"type": BUY_PROPERTY}, {"type": PASS_BUY}]
 
         if self.phase == "ready_to_roll":
@@ -198,7 +212,7 @@ class BancoImobiliarioEnv:
             actions.extend(self._get_financial_actions(player_index))
 
             if not self.trade_proposed_this_turn:
-                actions.extend(self._sample_trade_actions(player_index, max_actions=16))
+                actions.extend(self._sample_trade_actions(player_index, max_actions=20))
 
             return actions
 
@@ -244,6 +258,10 @@ class BancoImobiliarioEnv:
         before_net_worth = self._reward_net_worth(acting_player_index)
         before_completed_groups = self._completed_group_count(acting_player_index)
         before_total_houses = self._total_houses(acting_player_index)
+        before_strategic_scores = [self._strategic_position_score(i) for i in range(self.num_players)]
+        trade_before_action = copy.deepcopy(self.pending_trade)
+        purchase_before_action = self._current_purchase_property_index()
+        auction_before_action = copy.deepcopy(self.auction)
         action_type = action.get("type")
 
         if action_type == ROLL_DICE:
@@ -282,6 +300,7 @@ class BancoImobiliarioEnv:
         after_net_worth = self._reward_net_worth(acting_player_index)
         after_completed_groups = self._completed_group_count(acting_player_index)
         after_total_houses = self._total_houses(acting_player_index)
+        after_strategic_scores = [self._strategic_position_score(i) for i in range(self.num_players)]
         reward = (after_net_worth - before_net_worth) / 100.0
         reward += self._strategic_reward(
             action_type,
@@ -289,6 +308,20 @@ class BancoImobiliarioEnv:
             after_completed_groups,
             before_total_houses,
             after_total_houses,
+        )
+        reward += self._trade_strategy_reward(
+            action_type,
+            acting_player_index,
+            action if action_type == PROPOSE_TRADE else trade_before_action,
+            before_strategic_scores,
+            after_strategic_scores,
+        )
+        reward += self._purchase_auction_strategy_reward(
+            action_type,
+            acting_player_index,
+            action,
+            purchase_before_action,
+            auction_before_action,
         )
 
         if self.done and self.winner is not None:
@@ -617,7 +650,7 @@ class BancoImobiliarioEnv:
         player = self.players[player_index]
         current_bid = int(self.auction["current_bid"])
         min_bid = current_bid + 10
-        actions = [{"type": AUCTION_PASS}]
+        actions = []
 
         max_bid = self._max_reasonable_auction_bid(player_index)
         if min_bid <= max_bid:
@@ -635,13 +668,18 @@ class BancoImobiliarioEnv:
                 if current_bid < amount <= max_bid
             )
 
+        if not actions or not self._should_force_auction_bid(player_index, min_bid, max_bid):
+            actions.insert(0, {"type": AUCTION_PASS})
+
         return actions
 
     def _max_reasonable_auction_bid(self, player_index: int) -> int:
         assert self.auction is not None
-        player = self.players[player_index]
-        space = self.board[self.auction["property_index"]]
+        return self._max_reasonable_bid_for_property(player_index, self.auction["property_index"])
 
+    def _max_reasonable_bid_for_property(self, player_index: int, prop_index: int) -> int:
+        player = self.players[player_index]
+        space = self.board[prop_index]
         if player.money <= 0:
             return 0
 
@@ -684,12 +722,12 @@ class BancoImobiliarioEnv:
             )
 
             if owned_in_group == len(GROUPS[space.group]) - 1:
-                value = int(space.price * 1.60)
+                value = int(space.price * AUCTION_COMPLETE_VALUE_MULTIPLIER)
             elif owned_in_group > 0:
                 value = int(space.price * 1.20)
 
             if opponents_near_monopoly:
-                value = max(value, int(space.price * 1.30))
+                value = max(value, int(space.price * AUCTION_BLOCK_VALUE_MULTIPLIER))
 
         elif space.type == "railroad":
             owned_railroads = sum(1 for prop_index in RAILROADS if self.board[prop_index].owner == player_index)
@@ -700,6 +738,62 @@ class BancoImobiliarioEnv:
             value = int(space.price * (1.00 + 0.25 * owned_utilities))
 
         return value
+
+    def _should_force_buy_property(self, player_index: int) -> bool:
+        if self.phase != "awaiting_buy":
+            return False
+
+        player = self.players[player_index]
+        space_index = player.position
+        space = self.board[space_index]
+
+        if not space.is_ownable() or space.owner is not None or player.money < space.price:
+            return False
+
+        if not self._is_critical_purchase_property(space_index, player_index):
+            return False
+
+        return player.money >= space.price + self._critical_purchase_cash_reserve(player_index)
+
+    def _should_force_auction_bid(self, player_index: int, min_bid: int, max_bid: int) -> bool:
+        if self.auction is None or min_bid > max_bid:
+            return False
+
+        if self.auction.get("highest_bidder") == player_index:
+            return False
+
+        prop_index = self.auction["property_index"]
+        if not self._is_critical_purchase_property(prop_index, player_index):
+            return False
+
+        return self.players[player_index].money >= min_bid + self._critical_purchase_cash_reserve(player_index)
+
+    def _is_critical_purchase_property(self, prop_index: int, player_index: int) -> bool:
+        if not (0 <= prop_index < len(self.board)):
+            return False
+
+        space = self.board[prop_index]
+        if space.type != "property" or space.group not in GROUPS:
+            return False
+
+        if self._property_completes_group_for_player(prop_index, player_index):
+            return True
+
+        return self._property_blocks_opponent_completion(prop_index, player_index)
+
+    def _property_blocks_opponent_completion(self, prop_index: int, player_index: int) -> bool:
+        return any(
+            opponent_index != player_index
+            and not opponent.bankrupt
+            and self._property_completes_group_for_player(prop_index, opponent_index)
+            for opponent_index, opponent in enumerate(self.players)
+        )
+
+    def _critical_purchase_cash_reserve(self, player_index: int) -> int:
+        reserve = CRITICAL_BUY_CASH_RESERVE
+        if self.players[player_index].in_jail:
+            reserve += JAIL_FINE
+        return reserve
 
     def _auction_bid(self, action: Dict[str, Any]):
         if self.phase != "auction" or not self.auction:
@@ -957,6 +1051,17 @@ class BancoImobiliarioEnv:
             request_money,
         ):
             self.last_message = "Troca ignorada por falta de contrapartida real."
+            return
+
+        if not self._is_trade_strategically_reasonable(
+            proposer_index,
+            target_index,
+            offer_properties,
+            offer_money,
+            request_properties,
+            request_money,
+        ):
+            self.last_message = "Troca ignorada por favorecer demais o adversario."
             return
 
         self.pending_trade = {
@@ -1379,8 +1484,196 @@ class BancoImobiliarioEnv:
             reward += 12.0 * completed_delta
         return reward
 
+    def _purchase_auction_strategy_reward(
+        self,
+        action_type: Optional[str],
+        acting_player_index: int,
+        action: Dict[str, Any],
+        purchase_property_index: Optional[int],
+        auction_before_action: Optional[Dict[str, Any]],
+    ) -> float:
+        if action_type == BUY_PROPERTY and purchase_property_index is not None:
+            return self._property_control_reward(acting_player_index, purchase_property_index)
+
+        if action_type == PASS_BUY and purchase_property_index is not None:
+            if self._can_afford_critical_purchase(acting_player_index, purchase_property_index):
+                return -self._property_control_penalty(acting_player_index, purchase_property_index)
+            return 0.0
+
+        if action_type == AUCTION_BID and auction_before_action is not None:
+            prop_index = int(auction_before_action["property_index"])
+            amount = int(action.get("amount", 0))
+            max_bid = max(1, self._max_reasonable_bid_for_property(acting_player_index, prop_index))
+            bid_pressure = min(1.0, amount / float(max_bid))
+            return self._property_control_reward(acting_player_index, prop_index) * (0.35 + 0.35 * bid_pressure)
+
+        if action_type == AUCTION_PASS and auction_before_action is not None:
+            prop_index = int(auction_before_action["property_index"])
+            current_bid = int(auction_before_action.get("current_bid", 0))
+            min_bid = current_bid + 10
+            max_bid = self._max_reasonable_bid_for_property(acting_player_index, prop_index)
+
+            penalty = 0.0
+            if min_bid <= max_bid and self._is_critical_purchase_property(prop_index, acting_player_index):
+                penalty += self._property_control_penalty(acting_player_index, prop_index)
+
+            highest_bidder = auction_before_action.get("highest_bidder")
+            if (
+                highest_bidder is not None
+                and highest_bidder != acting_player_index
+                and self._property_completes_group_for_player(prop_index, int(highest_bidder))
+            ):
+                penalty += 5.0
+
+            return -min(10.0, penalty)
+
+        return 0.0
+
+    def _current_purchase_property_index(self) -> Optional[int]:
+        if self.phase != "awaiting_buy":
+            return None
+        prop_index = self.current_player.position
+        if not (0 <= prop_index < len(self.board)):
+            return None
+        space = self.board[prop_index]
+        if not space.is_ownable() or space.owner is not None:
+            return None
+        return prop_index
+
+    def _property_control_reward(self, player_index: int, prop_index: int) -> float:
+        if not (0 <= prop_index < len(self.board)):
+            return 0.0
+
+        space = self.board[prop_index]
+        if space.type != "property" or space.group not in GROUPS:
+            return 1.0 if space.is_ownable() else 0.0
+
+        reward = 1.0
+        if self._property_completes_group_for_player(prop_index, player_index):
+            reward += 8.0
+        elif self._property_creates_near_group_for_player(prop_index, player_index):
+            reward += 2.5
+
+        if self._property_blocks_opponent_completion(prop_index, player_index):
+            reward += 8.0
+
+        return min(10.0, reward)
+
+    def _property_control_penalty(self, player_index: int, prop_index: int) -> float:
+        reward = self._property_control_reward(player_index, prop_index)
+        if self._property_blocks_opponent_completion(prop_index, player_index):
+            reward = max(reward, 9.0)
+        if self._property_completes_group_for_player(prop_index, player_index):
+            reward = max(reward, 9.0)
+        return min(10.0, reward)
+
+    def _can_afford_critical_purchase(self, player_index: int, prop_index: int) -> bool:
+        if not (0 <= prop_index < len(self.board)):
+            return False
+        space = self.board[prop_index]
+        if not space.is_ownable():
+            return False
+        return self.players[player_index].money >= space.price + self._critical_purchase_cash_reserve(player_index)
+
+    def _trade_strategy_reward(
+        self,
+        action_type: Optional[str],
+        acting_player_index: int,
+        trade: Optional[Dict[str, Any]],
+        before_scores: List[float],
+        after_scores: List[float],
+    ) -> float:
+        if not trade:
+            return 0.0
+
+        if action_type == PROPOSE_TRADE:
+            proposer_index = acting_player_index
+            target_index = int(trade.get("target_player", -1))
+            if not (0 <= target_index < self.num_players):
+                return 0.0
+            proposer_delta, target_delta = self._estimate_trade_score_deltas(
+                proposer_index,
+                target_index,
+                list(trade.get("offer_properties", [])),
+                int(trade.get("offer_money", 0)),
+                list(trade.get("request_properties", [])),
+                int(trade.get("request_money", 0)),
+            )
+            return max(-5.0, min(5.0, (proposer_delta - target_delta) / 120.0))
+
+        if action_type != ACCEPT_TRADE:
+            return 0.0
+
+        own_delta = after_scores[acting_player_index] - before_scores[acting_player_index]
+        opponent_delta = max(
+            (
+                after_scores[i] - before_scores[i]
+                for i in range(self.num_players)
+                if i != acting_player_index
+            ),
+            default=0.0,
+        )
+        return max(-8.0, min(8.0, (own_delta - max(0.0, opponent_delta)) / 120.0))
+
     def _completed_group_count(self, player_index: int) -> int:
         return sum(1 for group in GROUPS if self._owns_complete_group(player_index, group))
+
+    def _near_group_count(self, player_index: int) -> int:
+        count = 0
+        for group, properties in GROUPS.items():
+            owned = sum(1 for prop_index in properties if self.board[prop_index].owner == player_index)
+            if owned == len(properties) - 1:
+                count += 1
+        return count
+
+    def _blocking_property_count(self, player_index: int) -> int:
+        blockers = 0
+        for group, properties in GROUPS.items():
+            for prop_index in properties:
+                if self.board[prop_index].owner != player_index:
+                    continue
+                for opponent_index, opponent in enumerate(self.players):
+                    if opponent_index == player_index or opponent.bankrupt:
+                        continue
+                    opponent_owned = sum(
+                        1
+                        for other_index in properties
+                        if self.board[other_index].owner == opponent_index
+                    )
+                    if opponent_owned == len(properties) - 1:
+                        blockers += 1
+                        break
+        return blockers
+
+    def _highest_rent_potential(self, player_index: int) -> int:
+        highest = 0
+        for space in self.board:
+            if space.owner != player_index:
+                continue
+            if space.type == "property" and space.rent_schedule:
+                highest = max(highest, max(space.rent_schedule))
+            elif space.type == "railroad":
+                highest = max(highest, 200)
+            elif space.type == "utility":
+                highest = max(highest, 120)
+        return highest
+
+    def _best_group_progress(self, player_index: int) -> float:
+        best = 0.0
+        for properties in GROUPS.values():
+            owned = sum(1 for prop_index in properties if self.board[prop_index].owner == player_index)
+            best = max(best, owned / float(len(properties)))
+        return best
+
+    def _strategic_position_score(self, player_index: int) -> float:
+        return (
+            self._reward_net_worth(player_index)
+            + self._completed_group_count(player_index) * 650.0
+            + self._near_group_count(player_index) * 180.0
+            + self._blocking_property_count(player_index) * 90.0
+            + self._highest_rent_potential(player_index) * 0.45
+            + self._total_houses(player_index) * 80.0
+        )
 
     def _total_houses(self, player_index: int) -> int:
         return sum(
@@ -1421,6 +1714,179 @@ class BancoImobiliarioEnv:
         proposer_gives = bool(offer_properties) or offer_money > 0
         target_gives = bool(request_properties) or request_money > 0
         return proposer_gives and target_gives
+
+    def _is_trade_strategically_reasonable(
+        self,
+        proposer_index: int,
+        target_index: int,
+        offer_properties: List[int],
+        offer_money: int,
+        request_properties: List[int],
+        request_money: int,
+    ) -> bool:
+        proposer_delta, target_delta = self._estimate_trade_score_deltas(
+            proposer_index,
+            target_index,
+            offer_properties,
+            offer_money,
+            request_properties,
+            request_money,
+        )
+
+        if proposer_delta < TRADE_MIN_PROPOSER_DELTA:
+            return False
+
+        both_sides_reasonable = (
+            proposer_delta >= -TRADE_FAIRNESS_MARGIN
+            and target_delta >= -TRADE_FAIRNESS_MARGIN
+            and abs(proposer_delta - target_delta) <= TRADE_MAX_OPPONENT_EDGE
+        )
+
+        if not both_sides_reasonable and target_delta - proposer_delta > TRADE_MAX_OPPONENT_EDGE:
+            return False
+
+        for prop_index in offer_properties:
+            if self._property_completes_group_for_player(prop_index, target_index):
+                return proposer_delta >= target_delta - TRADE_FAIRNESS_MARGIN and proposer_delta >= 150.0
+            if self._property_creates_near_group_for_player(prop_index, target_index):
+                return proposer_delta >= target_delta - TRADE_FAIRNESS_MARGIN
+            if self._property_is_critical_for_owner(prop_index, proposer_index):
+                return proposer_delta >= -TRADE_FAIRNESS_MARGIN
+
+        return True
+
+    def _estimate_trade_score_deltas(
+        self,
+        proposer_index: int,
+        target_index: int,
+        offer_properties: List[int],
+        offer_money: int,
+        request_properties: List[int],
+        request_money: int,
+    ) -> tuple[float, float]:
+        before_proposer = self._strategic_position_score(proposer_index)
+        before_target = self._strategic_position_score(target_index)
+
+        owners = [
+            space.owner if space.is_ownable() else -2
+            for space in self.board
+        ]
+
+        for prop_index in offer_properties:
+            if 0 <= prop_index < len(owners):
+                owners[prop_index] = target_index
+
+        for prop_index in request_properties:
+            if 0 <= prop_index < len(owners):
+                owners[prop_index] = proposer_index
+
+        after_proposer = self._estimated_strategic_position_score(
+            proposer_index,
+            owners,
+            money_delta=request_money - offer_money,
+        )
+        after_target = self._estimated_strategic_position_score(
+            target_index,
+            owners,
+            money_delta=offer_money - request_money,
+        )
+
+        return after_proposer - before_proposer, after_target - before_target
+
+    def _estimated_strategic_position_score(
+        self,
+        player_index: int,
+        owners: List[Optional[int]],
+        money_delta: int = 0,
+    ) -> float:
+        net_worth = self._estimated_net_worth(player_index, owners, money_delta)
+        completed = 0
+        near = 0
+        blockers = 0
+        highest_rent = 0
+
+        for group, properties in GROUPS.items():
+            owned = sum(1 for prop_index in properties if owners[prop_index] == player_index)
+            if owned == len(properties):
+                completed += 1
+            if owned == len(properties) - 1:
+                near += 1
+
+            for prop_index in properties:
+                if owners[prop_index] != player_index:
+                    continue
+                for opponent_index, opponent in enumerate(self.players):
+                    if opponent_index == player_index or opponent.bankrupt:
+                        continue
+                    opponent_owned = sum(1 for other_index in properties if owners[other_index] == opponent_index)
+                    if opponent_owned == len(properties) - 1:
+                        blockers += 1
+                        break
+
+        for prop_index, space in enumerate(self.board):
+            if owners[prop_index] != player_index:
+                continue
+            if space.type == "property" and space.rent_schedule:
+                highest_rent = max(highest_rent, max(space.rent_schedule))
+            elif space.type == "railroad":
+                highest_rent = max(highest_rent, 200)
+            elif space.type == "utility":
+                highest_rent = max(highest_rent, 120)
+
+        return (
+            net_worth
+            + completed * 650.0
+            + near * 180.0
+            + blockers * 90.0
+            + highest_rent * 0.45
+            + self._total_houses(player_index) * 80.0
+        )
+
+    def _estimated_net_worth(
+        self,
+        player_index: int,
+        owners: List[Optional[int]],
+        money_delta: int = 0,
+    ) -> int:
+        total = self.players[player_index].money + money_delta
+        for prop_index, space in enumerate(self.board):
+            if owners[prop_index] == player_index:
+                total += space.mortgage_value if space.mortgaged else space.price
+                total += space.houses * space.build_cost
+        return total
+
+    def _property_completes_group_for_player(self, prop_index: int, player_index: int) -> bool:
+        if not (0 <= prop_index < len(self.board)):
+            return False
+        space = self.board[prop_index]
+        if space.group not in GROUPS:
+            return False
+        return all(
+            self.board[group_prop].owner == player_index or group_prop == prop_index
+            for group_prop in GROUPS[space.group]
+        )
+
+    def _property_creates_near_group_for_player(self, prop_index: int, player_index: int) -> bool:
+        if not (0 <= prop_index < len(self.board)):
+            return False
+        space = self.board[prop_index]
+        if space.group not in GROUPS:
+            return False
+        owned_after = sum(
+            1
+            for group_prop in GROUPS[space.group]
+            if self.board[group_prop].owner == player_index or group_prop == prop_index
+        )
+        return owned_after == len(GROUPS[space.group]) - 1
+
+    def _property_is_critical_for_owner(self, prop_index: int, owner_index: int) -> bool:
+        if not (0 <= prop_index < len(self.board)):
+            return False
+        space = self.board[prop_index]
+        if space.group not in GROUPS:
+            return False
+        owned = sum(1 for group_prop in GROUPS[space.group] if self.board[group_prop].owner == owner_index)
+        return owned >= len(GROUPS[space.group]) - 1
 
     def _group_has_buildings(self, group: Optional[str]) -> bool:
         return bool(group and any(self.board[i].houses > 0 for i in GROUPS.get(group, [])))
@@ -1594,11 +2060,24 @@ class BancoImobiliarioEnv:
             )
             if key in seen_actions:
                 return False
+            if not self._is_trade_strategically_reasonable(
+                player_index,
+                action["target_player"],
+                action.get("offer_properties", []),
+                int(action.get("offer_money", 0)),
+                action.get("request_properties", []),
+                int(action.get("request_money", 0)),
+            ):
+                return False
             seen_actions.add(key)
             actions.append(action)
             return len(actions) >= max_actions
 
         for action in self._get_region_completion_trade_actions(player_index):
+            if add_action(action):
+                return actions
+
+        for action in self._get_balanced_trade_actions(player_index, max_actions=max_actions):
             if add_action(action):
                 return actions
 
@@ -1626,6 +2105,87 @@ class BancoImobiliarioEnv:
                     }
                 ):
                     return actions
+
+        return actions
+
+    def _get_balanced_trade_actions(self, player_index: int, max_actions: int = 10) -> List[Dict[str, Any]]:
+        actions = []
+        proposer_properties = self.get_tradeable_properties(player_index)
+        if not proposer_properties:
+            return actions
+
+        for target_index, target in enumerate(self.players):
+            if target_index == player_index or target.bankrupt:
+                continue
+
+            target_properties = self.get_tradeable_properties(target_index)
+            if not target_properties:
+                continue
+
+            candidate_pairs = []
+            for offer_property in proposer_properties:
+                for request_property in target_properties:
+                    if self.board[offer_property].group == self.board[request_property].group:
+                        continue
+
+                    proposer_delta, target_delta = self._estimate_trade_score_deltas(
+                        player_index,
+                        target_index,
+                        [offer_property],
+                        0,
+                        [request_property],
+                        0,
+                    )
+                    combined = proposer_delta + target_delta
+                    fairness = abs(proposer_delta - target_delta)
+                    candidate_pairs.append(
+                        (
+                            combined - fairness * 0.35,
+                            proposer_delta,
+                            target_delta,
+                            offer_property,
+                            request_property,
+                        )
+                    )
+
+            candidate_pairs.sort(reverse=True)
+            for _, proposer_delta, target_delta, offer_property, request_property in candidate_pairs[:4]:
+                offer_money, request_money = self._balancing_trade_money(
+                    player_index,
+                    target_index,
+                    proposer_delta,
+                    target_delta,
+                )
+                actions.append(
+                    {
+                        "type": PROPOSE_TRADE,
+                        "target_player": target_index,
+                        "offer_properties": [offer_property],
+                        "offer_money": offer_money,
+                        "request_properties": [request_property],
+                        "request_money": request_money,
+                    }
+                )
+                if len(actions) >= max_actions:
+                    return actions
+
+            for request_property in target_properties:
+                if not self._property_completes_group_for_player(request_property, player_index):
+                    continue
+                cash_offer = self._cash_offer_for_property(player_index, target_index, request_property)
+                if cash_offer > 0:
+                    actions.append(
+                        {
+                            "type": PROPOSE_TRADE,
+                            "target_player": target_index,
+                            "offer_properties": [],
+                            "offer_money": cash_offer,
+                            "request_properties": [request_property],
+                            "request_money": 0,
+                        }
+                    )
+                    if len(actions) >= max_actions:
+                        return actions
 
         return actions
 
@@ -1708,8 +2268,68 @@ class BancoImobiliarioEnv:
     def _trade_offer_money(self, player_index: int, request_property: int, missing_count: int) -> int:
         player = self.players[player_index]
         requested_space = self.board[request_property]
-        target_offer = requested_space.price if missing_count == 1 else requested_space.price // 2
+        strategic_value = self._trade_property_value(player_index, request_property)
+        target_offer = strategic_value if missing_count == 1 else strategic_value // 2
         return max(0, min(player.money, target_offer))
+
+    def _balancing_trade_money(
+        self,
+        proposer_index: int,
+        target_index: int,
+        proposer_delta: float,
+        target_delta: float,
+    ) -> tuple[int, int]:
+        difference = proposer_delta - target_delta
+        if abs(difference) <= TRADE_FAIRNESS_MARGIN:
+            return 0, 0
+
+        compensation = int(min(300, max(50, round(abs(difference) / 2.0 / 25.0) * 25)))
+        if difference > 0:
+            return min(compensation, self.players[proposer_index].money), 0
+        return 0, min(compensation, self.players[target_index].money)
+
+    def _cash_offer_for_property(self, player_index: int, target_index: int, request_property: int) -> int:
+        property_value = self._trade_property_value(player_index, request_property)
+        target_reserve = 100
+        max_cash = max(0, self.players[player_index].money - target_reserve)
+        offer = min(max_cash, int(property_value * 1.15))
+
+        proposer_delta, target_delta = self._estimate_trade_score_deltas(
+            player_index,
+            target_index,
+            [],
+            offer,
+            [request_property],
+            0,
+        )
+        if proposer_delta < -TRADE_FAIRNESS_MARGIN or target_delta < -TRADE_FAIRNESS_MARGIN:
+            return 0
+        return int(offer)
+
+    def _trade_property_value(self, player_index: int, prop_index: int) -> int:
+        if not (0 <= prop_index < len(self.board)):
+            return 0
+
+        space = self.board[prop_index]
+        if not space.is_ownable():
+            return 0
+
+        value = space.price
+        if space.type == "property" and space.group in GROUPS:
+            if self._property_completes_group_for_player(prop_index, player_index):
+                value = int(value * 2.0)
+            elif self._property_creates_near_group_for_player(prop_index, player_index):
+                value = int(value * 1.35)
+            elif self._property_blocks_opponent_completion(prop_index, player_index):
+                value = int(value * 1.65)
+        elif space.type == "railroad":
+            owned = sum(1 for i in RAILROADS if self.board[i].owner == player_index)
+            value = int(value * (1.0 + 0.25 * owned))
+        elif space.type == "utility":
+            owned = sum(1 for i in UTILITIES if self.board[i].owner == player_index)
+            value = int(value * (1.0 + 0.35 * owned))
+
+        return value
 
     def _get_acting_player_for_action(self, action: Dict[str, Any]) -> int:
         if self.phase == "pending_trade_response" and self.pending_trade is not None:
