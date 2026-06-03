@@ -5,17 +5,27 @@ from typing import Any, Dict, List, Optional
 
 from game.actions import (
     ACCEPT_TRADE,
+    ADD_TRADE_OFFER_PROPERTY,
+    ADD_TRADE_REQUEST_PROPERTY,
     AUCTION_BID,
     AUCTION_PASS,
     BUILD_HOUSE,
     BUY_PROPERTY,
+    CANCEL_TRADE,
     DECLINE_TRADE,
+    FINISH_TRADE_OFFER,
+    FINISH_TRADE_REQUEST,
     MORTGAGE_PROPERTY,
     PASS_BUY,
     PAY_JAIL_FINE,
     PROPOSE_TRADE,
     ROLL_DICE,
     SELL_HOUSE,
+    SELECT_TRADE_TARGET,
+    SET_TRADE_OFFER_MONEY,
+    SET_TRADE_REQUEST_MONEY,
+    START_TRADE,
+    SUBMIT_TRADE,
     UNMORTGAGE_PROPERTY,
     USE_JAIL_CARD,
 )
@@ -40,9 +50,8 @@ JAIL_FINE = 50
 MAX_TURNS = 2000
 DEFENSIVE_CASH_THRESHOLD = 0
 UNMORTGAGE_CASH_RESERVE = 300
-TRADE_MAX_OPPONENT_EDGE = 450
-TRADE_MIN_PROPOSER_DELTA = -250
-TRADE_FAIRNESS_MARGIN = 180
+TRADE_MAX_PROPERTIES_PER_SIDE = 3
+TRADE_MONEY_CANDIDATES = (0, 25, 50, 100, 150, 200, 300, 500, 750, 1000, 1500)
 CRITICAL_BUY_CASH_RESERVE = 75
 AUCTION_BLOCK_VALUE_MULTIPLIER = 2.25
 AUCTION_COMPLETE_VALUE_MULTIPLIER = 1.90
@@ -97,6 +106,7 @@ class BancoImobiliarioEnv:
         self.consecutive_doubles = 0
         self.extra_turn_pending = False
         self.phase = "ready_to_roll"
+        self.trade_draft: Optional[Dict[str, Any]] = None
         self.pending_trade: Optional[Dict[str, Any]] = None
         self.last_trade_result: Optional[Dict[str, Any]] = None
         self.auction: Optional[Dict[str, Any]] = None
@@ -157,6 +167,7 @@ class BancoImobiliarioEnv:
             "player_blocking_properties": [self._blocking_property_count(i) for i in range(self.num_players)],
             "player_highest_rent_potential": [self._highest_rent_potential(i) for i in range(self.num_players)],
             "player_group_progress": [self._best_group_progress(i) for i in range(self.num_players)],
+            "trade_draft": copy.deepcopy(self.trade_draft),
             "pending_trade": copy.deepcopy(self.pending_trade),
             "last_trade_result": copy.deepcopy(self.last_trade_result),
             "auction": copy.deepcopy(self.auction),
@@ -185,7 +196,15 @@ class BancoImobiliarioEnv:
 
         if self.phase == "pending_trade_response":
             if self.pending_trade and self.pending_trade["to"] == player_index:
-                return [{"type": ACCEPT_TRADE}, {"type": DECLINE_TRADE}]
+                return [
+                    self._trade_response_action(ACCEPT_TRADE),
+                    self._trade_response_action(DECLINE_TRADE),
+                ]
+            return []
+
+        if self.phase == "building_trade":
+            if self.trade_draft and self.trade_draft["from"] == player_index:
+                return self._get_trade_draft_actions(player_index)
             return []
 
         if player_index != self.current_player_index:
@@ -211,8 +230,8 @@ class BancoImobiliarioEnv:
 
             actions.extend(self._get_financial_actions(player_index))
 
-            if not self.trade_proposed_this_turn:
-                actions.extend(self._sample_trade_actions(player_index, max_actions=20))
+            if not self.trade_proposed_this_turn and self._can_start_trade(player_index):
+                actions.append({"type": START_TRADE})
 
             return actions
 
@@ -230,6 +249,11 @@ class BancoImobiliarioEnv:
         if self.phase == "pending_trade_response":
             if self.pending_trade is None or self.players[self.pending_trade["to"]].bankrupt:
                 self._clear_trade()
+                return True
+
+        if self.phase == "building_trade":
+            if self.trade_draft is None or self.players[self.trade_draft["from"]].bankrupt:
+                self._clear_trade_draft()
                 return True
 
         if self.phase == "auction":
@@ -258,8 +282,6 @@ class BancoImobiliarioEnv:
         before_net_worth = self._reward_net_worth(acting_player_index)
         before_completed_groups = self._completed_group_count(acting_player_index)
         before_total_houses = self._total_houses(acting_player_index)
-        before_strategic_scores = [self._strategic_position_score(i) for i in range(self.num_players)]
-        trade_before_action = copy.deepcopy(self.pending_trade)
         purchase_before_action = self._current_purchase_property_index()
         auction_before_action = copy.deepcopy(self.auction)
         action_type = action.get("type")
@@ -278,6 +300,26 @@ class BancoImobiliarioEnv:
             self._pay_jail_fine()
         elif action_type == USE_JAIL_CARD:
             self._use_jail_card()
+        elif action_type == START_TRADE:
+            self._start_trade()
+        elif action_type == SELECT_TRADE_TARGET:
+            self._select_trade_target(action)
+        elif action_type == ADD_TRADE_OFFER_PROPERTY:
+            self._add_trade_offer_property(action)
+        elif action_type == FINISH_TRADE_OFFER:
+            self._finish_trade_offer()
+        elif action_type == SET_TRADE_OFFER_MONEY:
+            self._set_trade_offer_money(action)
+        elif action_type == ADD_TRADE_REQUEST_PROPERTY:
+            self._add_trade_request_property(action)
+        elif action_type == FINISH_TRADE_REQUEST:
+            self._finish_trade_request()
+        elif action_type == SET_TRADE_REQUEST_MONEY:
+            self._set_trade_request_money(action)
+        elif action_type == SUBMIT_TRADE:
+            self._submit_trade()
+        elif action_type == CANCEL_TRADE:
+            self._cancel_trade()
         elif action_type == PROPOSE_TRADE:
             self._propose_trade(action)
         elif action_type == ACCEPT_TRADE:
@@ -300,7 +342,6 @@ class BancoImobiliarioEnv:
         after_net_worth = self._reward_net_worth(acting_player_index)
         after_completed_groups = self._completed_group_count(acting_player_index)
         after_total_houses = self._total_houses(acting_player_index)
-        after_strategic_scores = [self._strategic_position_score(i) for i in range(self.num_players)]
         reward = (after_net_worth - before_net_worth) / 100.0
         reward += self._strategic_reward(
             action_type,
@@ -308,13 +349,6 @@ class BancoImobiliarioEnv:
             after_completed_groups,
             before_total_houses,
             after_total_houses,
-        )
-        reward += self._trade_strategy_reward(
-            action_type,
-            acting_player_index,
-            action if action_type == PROPOSE_TRADE else trade_before_action,
-            before_strategic_scores,
-            after_strategic_scores,
         )
         reward += self._purchase_auction_strategy_reward(
             action_type,
@@ -362,6 +396,7 @@ class BancoImobiliarioEnv:
             "consecutive_doubles": self.consecutive_doubles,
             "extra_turn_pending": self.extra_turn_pending,
             "phase": self.phase,
+            "trade_draft": copy.deepcopy(self.trade_draft),
             "pending_trade": copy.deepcopy(self.pending_trade),
             "last_trade_result": copy.deepcopy(self.last_trade_result),
             "auction": copy.deepcopy(self.auction),
@@ -391,6 +426,7 @@ class BancoImobiliarioEnv:
         self.consecutive_doubles = snapshot["consecutive_doubles"]
         self.extra_turn_pending = snapshot["extra_turn_pending"]
         self.phase = snapshot["phase"]
+        self.trade_draft = copy.deepcopy(snapshot.get("trade_draft"))
         self.pending_trade = copy.deepcopy(snapshot["pending_trade"])
         self.last_trade_result = copy.deepcopy(snapshot.get("last_trade_result"))
         self.auction = copy.deepcopy(snapshot["auction"])
@@ -994,6 +1030,312 @@ class BancoImobiliarioEnv:
         space.mortgaged = False
         self.last_message = f"{self.current_player.name} quitou hipoteca de {space.name} por ${cost}."
 
+    def _can_start_trade(self, player_index: int) -> bool:
+        if self.trade_proposed_this_turn or self.players[player_index].bankrupt:
+            return False
+
+        proposer_can_give = bool(self.get_tradeable_properties(player_index)) or self.players[player_index].money > 0
+        if not proposer_can_give:
+            return False
+
+        for target_index, target in enumerate(self.players):
+            if target_index == player_index or target.bankrupt:
+                continue
+            if self.get_tradeable_properties(target_index) or target.money > 0:
+                return True
+        return False
+
+    def _start_trade(self):
+        if self.phase != "ready_to_roll":
+            self.last_message = "Trocas so podem ser iniciadas antes de rolar os dados."
+            return
+
+        proposer_index = self.current_player_index
+        if not self._can_start_trade(proposer_index):
+            self.last_message = "Nao ha troca legal disponivel para iniciar."
+            return
+
+        self.trade_draft = {
+            "from": proposer_index,
+            "to": None,
+            "offer_properties": [],
+            "request_properties": [],
+            "offer_money": 0,
+            "request_money": 0,
+            "stage": "target",
+        }
+        self.trade_proposed_this_turn = True
+        self.phase = "building_trade"
+        self.last_trade_result = None
+        self.last_message = f"{self.current_player.name} iniciou uma proposta de troca."
+
+    def _get_trade_draft_actions(self, player_index: int) -> List[Dict[str, Any]]:
+        if not self.trade_draft or self.trade_draft["from"] != player_index:
+            return []
+
+        actions: List[Dict[str, Any]] = [{"type": CANCEL_TRADE}]
+        stage = self.trade_draft.get("stage", "target")
+        target_index = self.trade_draft.get("to")
+
+        if stage == "target":
+            for candidate_index, candidate in enumerate(self.players):
+                if candidate_index == player_index or candidate.bankrupt:
+                    continue
+                if self.get_tradeable_properties(candidate_index) or candidate.money > 0:
+                    actions.append({"type": SELECT_TRADE_TARGET, "target_player": candidate_index})
+            return actions
+
+        if target_index is None or not (0 <= target_index < self.num_players) or self.players[target_index].bankrupt:
+            return actions
+
+        if stage == "offer_properties":
+            selected = set(self.trade_draft["offer_properties"])
+            if len(selected) < TRADE_MAX_PROPERTIES_PER_SIDE:
+                for prop_index in self.get_tradeable_properties(player_index):
+                    if prop_index not in selected:
+                        actions.append({"type": ADD_TRADE_OFFER_PROPERTY, "property_index": prop_index})
+            actions.append({"type": FINISH_TRADE_OFFER})
+            return actions
+
+        if stage == "offer_money":
+            for amount in self._trade_money_options(self.players[player_index].money):
+                actions.append({
+                    "type": SET_TRADE_OFFER_MONEY,
+                    "amount": amount,
+                    "offer_money": amount,
+                })
+            return actions
+
+        if stage == "request_properties":
+            selected = set(self.trade_draft["request_properties"])
+            if len(selected) < TRADE_MAX_PROPERTIES_PER_SIDE:
+                for prop_index in self.get_tradeable_properties(target_index):
+                    if prop_index not in selected:
+                        actions.append({"type": ADD_TRADE_REQUEST_PROPERTY, "property_index": prop_index})
+            actions.append({"type": FINISH_TRADE_REQUEST})
+            return actions
+
+        if stage == "request_money":
+            for amount in self._trade_money_options(self.players[target_index].money):
+                actions.append({
+                    "type": SET_TRADE_REQUEST_MONEY,
+                    "amount": amount,
+                    "request_money": amount,
+                })
+            return actions
+
+        if stage == "confirm":
+            if self._trade_draft_is_legal():
+                actions.append(self._draft_action_payload(SUBMIT_TRADE))
+            return actions
+
+        return actions
+
+    def _trade_money_options(self, max_amount: int) -> List[int]:
+        max_amount = max(0, int(max_amount))
+        values = {0}
+        values.update(amount for amount in TRADE_MONEY_CANDIDATES if amount <= max_amount)
+        if max_amount > 0:
+            values.add(max_amount)
+        return sorted(values)
+
+    def _draft_action_payload(self, action_type: str) -> Dict[str, Any]:
+        draft = self.trade_draft or {}
+        return {
+            "type": action_type,
+            "target_player": draft.get("to", -1),
+            "offer_properties": list(draft.get("offer_properties", [])),
+            "offer_money": int(draft.get("offer_money", 0)),
+            "request_properties": list(draft.get("request_properties", [])),
+            "request_money": int(draft.get("request_money", 0)),
+        }
+
+    def _require_trade_draft_stage(self, stage: str) -> bool:
+        if self.phase != "building_trade" or not self.trade_draft:
+            self.last_message = "Nao existe proposta de troca em montagem."
+            return False
+        if self.trade_draft.get("stage") != stage:
+            self.last_message = "Essa acao nao pertence a etapa atual da troca."
+            return False
+        return True
+
+    def _select_trade_target(self, action: Dict[str, Any]):
+        if not self._require_trade_draft_stage("target"):
+            return
+
+        target_index = action.get("target_player")
+        proposer_index = self.trade_draft["from"]
+        if target_index is None or target_index == proposer_index or not (0 <= target_index < self.num_players):
+            self.last_message = "Jogador alvo invalido para troca."
+            return
+        if self.players[target_index].bankrupt:
+            self.last_message = "Jogador falido nao pode participar de troca."
+            return
+        if not self.get_tradeable_properties(target_index) and self.players[target_index].money <= 0:
+            self.last_message = "Jogador alvo nao tem itens ou dinheiro negociaveis."
+            return
+
+        self.trade_draft["to"] = int(target_index)
+        self.trade_draft["stage"] = "offer_properties"
+        self.last_message = f"{self.players[proposer_index].name} escolheu {self.players[target_index].name} para troca."
+
+    def _add_trade_offer_property(self, action: Dict[str, Any]):
+        if not self._require_trade_draft_stage("offer_properties"):
+            return
+
+        proposer_index = self.trade_draft["from"]
+        prop_index = int(action.get("property_index", -1))
+        selected = self.trade_draft["offer_properties"]
+        if len(selected) >= TRADE_MAX_PROPERTIES_PER_SIDE:
+            self.last_message = "Limite de propriedades oferecidas atingido."
+            return
+        if prop_index in selected:
+            self.last_message = "Propriedade ja esta na oferta."
+            return
+        if not self._is_tradeable_property(prop_index, proposer_index):
+            self.last_message = "Propriedade oferecida nao pode ser negociada."
+            return
+
+        selected.append(prop_index)
+        self.last_message = f"{self.current_player.name} adicionou {self.board[prop_index].name} a oferta."
+
+    def _finish_trade_offer(self):
+        if not self._require_trade_draft_stage("offer_properties"):
+            return
+        self.trade_draft["stage"] = "offer_money"
+        self.last_message = "Etapa de propriedades oferecidas finalizada."
+
+    def _set_trade_offer_money(self, action: Dict[str, Any]):
+        if not self._require_trade_draft_stage("offer_money"):
+            return
+
+        amount = int(action.get("amount", action.get("offer_money", 0)))
+        proposer_index = self.trade_draft["from"]
+        if amount < 0 or amount > self.players[proposer_index].money:
+            self.last_message = "Dinheiro oferecido invalido."
+            return
+
+        self.trade_draft["offer_money"] = amount
+        self.trade_draft["stage"] = "request_properties"
+        self.last_message = f"{self.current_player.name} definiu oferta em dinheiro: ${amount}."
+
+    def _add_trade_request_property(self, action: Dict[str, Any]):
+        if not self._require_trade_draft_stage("request_properties"):
+            return
+
+        target_index = self.trade_draft.get("to")
+        prop_index = int(action.get("property_index", -1))
+        selected = self.trade_draft["request_properties"]
+        if target_index is None:
+            self.last_message = "Troca ainda nao tem jogador alvo."
+            return
+        if len(selected) >= TRADE_MAX_PROPERTIES_PER_SIDE:
+            self.last_message = "Limite de propriedades pedidas atingido."
+            return
+        if prop_index in selected:
+            self.last_message = "Propriedade ja esta no pedido."
+            return
+        if not self._is_tradeable_property(prop_index, int(target_index)):
+            self.last_message = "Propriedade pedida nao pode ser negociada."
+            return
+
+        selected.append(prop_index)
+        self.last_message = f"{self.current_player.name} pediu {self.board[prop_index].name}."
+
+    def _finish_trade_request(self):
+        if not self._require_trade_draft_stage("request_properties"):
+            return
+        self.trade_draft["stage"] = "request_money"
+        self.last_message = "Etapa de propriedades pedidas finalizada."
+
+    def _set_trade_request_money(self, action: Dict[str, Any]):
+        if not self._require_trade_draft_stage("request_money"):
+            return
+
+        target_index = self.trade_draft.get("to")
+        amount = int(action.get("amount", action.get("request_money", 0)))
+        if target_index is None or amount < 0 or amount > self.players[int(target_index)].money:
+            self.last_message = "Dinheiro pedido invalido."
+            return
+
+        self.trade_draft["request_money"] = amount
+        self.trade_draft["stage"] = "confirm"
+        self.last_message = f"{self.current_player.name} definiu pedido em dinheiro: ${amount}."
+
+    def _trade_draft_is_legal(self) -> bool:
+        if not self.trade_draft:
+            return False
+
+        proposer_index = self.trade_draft["from"]
+        target_index = self.trade_draft.get("to")
+        if target_index is None or not (0 <= target_index < self.num_players):
+            return False
+
+        proposer = self.players[proposer_index]
+        target = self.players[int(target_index)]
+        if proposer.bankrupt or target.bankrupt:
+            return False
+
+        offer_properties = list(self.trade_draft.get("offer_properties", []))
+        request_properties = list(self.trade_draft.get("request_properties", []))
+        offer_money = int(self.trade_draft.get("offer_money", 0))
+        request_money = int(self.trade_draft.get("request_money", 0))
+
+        if offer_money < 0 or request_money < 0:
+            return False
+        if offer_money > proposer.money or request_money > target.money:
+            return False
+        if not self._has_meaningful_trade_consideration(
+            offer_properties,
+            offer_money,
+            request_properties,
+            request_money,
+        ):
+            return False
+
+        for prop_index in offer_properties:
+            if not self._is_tradeable_property(prop_index, proposer_index):
+                return False
+        for prop_index in request_properties:
+            if not self._is_tradeable_property(prop_index, int(target_index)):
+                return False
+        return True
+
+    def _submit_trade(self):
+        if not self._require_trade_draft_stage("confirm"):
+            return
+        if not self._trade_draft_is_legal():
+            self.last_message = "Proposta de troca invalida ou sem contrapartida."
+            return
+
+        draft = self.trade_draft
+        proposer = self.players[draft["from"]]
+        target = self.players[draft["to"]]
+        self.pending_trade = {
+            "from": draft["from"],
+            "to": draft["to"],
+            "offer_properties": list(draft["offer_properties"]),
+            "request_properties": list(draft["request_properties"]),
+            "offer_money": int(draft["offer_money"]),
+            "request_money": int(draft["request_money"]),
+        }
+        self.trade_draft = None
+        self.last_trade_result = None
+        self.phase = "pending_trade_response"
+        self.last_message = f"{proposer.name} enviou uma proposta de troca para {target.name}."
+
+    def _cancel_trade(self):
+        if self.phase != "building_trade" or not self.trade_draft:
+            self.last_message = "Nao existe proposta de troca para cancelar."
+            return
+        proposer = self.players[self.trade_draft["from"]]
+        self._clear_trade_draft()
+        self.last_message = f"{proposer.name} cancelou a montagem da troca."
+
+    def _clear_trade_draft(self):
+        self.trade_draft = None
+        self.phase = "ready_to_roll"
+
     def _propose_trade(self, action: Dict[str, Any]):
         if self.phase != "ready_to_roll":
             self.last_message = "Trocas so podem ser propostas antes de rolar os dados."
@@ -1051,17 +1393,6 @@ class BancoImobiliarioEnv:
             request_money,
         ):
             self.last_message = "Troca ignorada por falta de contrapartida real."
-            return
-
-        if not self._is_trade_strategically_reasonable(
-            proposer_index,
-            target_index,
-            offer_properties,
-            offer_money,
-            request_properties,
-            request_money,
-        ):
-            self.last_message = "Troca ignorada por favorecer demais o adversario."
             return
 
         self.pending_trade = {
@@ -1135,6 +1466,7 @@ class BancoImobiliarioEnv:
 
     def _clear_trade(self):
         self.pending_trade = None
+        self.trade_draft = None
         self.phase = "ready_to_roll"
 
     def _set_last_trade_result(self, status: str, trade: Dict[str, Any], message: str):
@@ -1350,6 +1682,7 @@ class BancoImobiliarioEnv:
             return
 
         self.phase = "ready_to_roll"
+        self.trade_draft = None
         self.trade_proposed_this_turn = False
         self.properties_sold_buildings_this_turn.clear()
         self.properties_built_this_turn.clear()
@@ -1575,46 +1908,6 @@ class BancoImobiliarioEnv:
             return False
         return self.players[player_index].money >= space.price + self._critical_purchase_cash_reserve(player_index)
 
-    def _trade_strategy_reward(
-        self,
-        action_type: Optional[str],
-        acting_player_index: int,
-        trade: Optional[Dict[str, Any]],
-        before_scores: List[float],
-        after_scores: List[float],
-    ) -> float:
-        if not trade:
-            return 0.0
-
-        if action_type == PROPOSE_TRADE:
-            proposer_index = acting_player_index
-            target_index = int(trade.get("target_player", -1))
-            if not (0 <= target_index < self.num_players):
-                return 0.0
-            proposer_delta, target_delta = self._estimate_trade_score_deltas(
-                proposer_index,
-                target_index,
-                list(trade.get("offer_properties", [])),
-                int(trade.get("offer_money", 0)),
-                list(trade.get("request_properties", [])),
-                int(trade.get("request_money", 0)),
-            )
-            return max(-5.0, min(5.0, (proposer_delta - target_delta) / 120.0))
-
-        if action_type != ACCEPT_TRADE:
-            return 0.0
-
-        own_delta = after_scores[acting_player_index] - before_scores[acting_player_index]
-        opponent_delta = max(
-            (
-                after_scores[i] - before_scores[i]
-                for i in range(self.num_players)
-                if i != acting_player_index
-            ),
-            default=0.0,
-        )
-        return max(-8.0, min(8.0, (own_delta - max(0.0, opponent_delta)) / 120.0))
-
     def _completed_group_count(self, player_index: int) -> int:
         return sum(1 for group in GROUPS if self._owns_complete_group(player_index, group))
 
@@ -1714,46 +2007,6 @@ class BancoImobiliarioEnv:
         proposer_gives = bool(offer_properties) or offer_money > 0
         target_gives = bool(request_properties) or request_money > 0
         return proposer_gives and target_gives
-
-    def _is_trade_strategically_reasonable(
-        self,
-        proposer_index: int,
-        target_index: int,
-        offer_properties: List[int],
-        offer_money: int,
-        request_properties: List[int],
-        request_money: int,
-    ) -> bool:
-        proposer_delta, target_delta = self._estimate_trade_score_deltas(
-            proposer_index,
-            target_index,
-            offer_properties,
-            offer_money,
-            request_properties,
-            request_money,
-        )
-
-        if proposer_delta < TRADE_MIN_PROPOSER_DELTA:
-            return False
-
-        both_sides_reasonable = (
-            proposer_delta >= -TRADE_FAIRNESS_MARGIN
-            and target_delta >= -TRADE_FAIRNESS_MARGIN
-            and abs(proposer_delta - target_delta) <= TRADE_MAX_OPPONENT_EDGE
-        )
-
-        if not both_sides_reasonable and target_delta - proposer_delta > TRADE_MAX_OPPONENT_EDGE:
-            return False
-
-        for prop_index in offer_properties:
-            if self._property_completes_group_for_player(prop_index, target_index):
-                return proposer_delta >= target_delta - TRADE_FAIRNESS_MARGIN and proposer_delta >= 150.0
-            if self._property_creates_near_group_for_player(prop_index, target_index):
-                return proposer_delta >= target_delta - TRADE_FAIRNESS_MARGIN
-            if self._property_is_critical_for_owner(prop_index, proposer_index):
-                return proposer_delta >= -TRADE_FAIRNESS_MARGIN
-
-        return True
 
     def _estimate_trade_score_deltas(
         self,
@@ -2021,10 +2274,25 @@ class BancoImobiliarioEnv:
         if not self.pending_trade:
             return []
 
-        trade = self.pending_trade
+        return self._describe_trade(self.pending_trade, "Troca pendente:")
+
+    def describe_trade_draft(self) -> List[str]:
+        if not self.trade_draft:
+            return []
+
+        return self._describe_trade(
+            self.trade_draft,
+            f"Montando troca: {self.trade_draft.get('stage', '-')}",
+        )
+
+    def _describe_trade(self, trade: Dict[str, Any], title: str) -> List[str]:
         proposer = self.players[trade["from"]]
-        target = self.players[trade["to"]]
-        lines = ["Troca pendente:", f"{proposer.name} -> {target.name}", "", "Oferece:"]
+        target_index = trade.get("to")
+        target_name = "alvo nao definido"
+        if target_index is not None and 0 <= target_index < len(self.players):
+            target_name = self.players[target_index].name
+
+        lines = [title, f"{proposer.name} -> {target_name}", "", "Oferece:"]
 
         if trade["offer_properties"]:
             lines.extend(f"- {self.board[prop_index].name}" for prop_index in trade["offer_properties"])
@@ -2041,270 +2309,96 @@ class BancoImobiliarioEnv:
         lines.append(f"- ${trade['request_money']}")
         return lines
 
-    def _sample_trade_actions(self, player_index: int, max_actions: int = 6) -> List[Dict[str, Any]]:
-        actions = []
-        proposer_properties = self.get_tradeable_properties(player_index)
-        if not proposer_properties:
-            return actions
+    def _trade_response_action(self, action_type: str) -> Dict[str, Any]:
+        assert self.pending_trade is not None
+        trade = self.pending_trade
+        action = {
+            "type": action_type,
+            "target_player": trade["from"],
+            "offer_properties": list(trade["offer_properties"]),
+            "offer_money": int(trade["offer_money"]),
+            "request_properties": list(trade["request_properties"]),
+            "request_money": int(trade["request_money"]),
+        }
+        return self._with_trade_features(action, trade["from"])
 
-        rng = self._trade_action_random(player_index)
-        seen_actions = set()
+    def _with_trade_features(self, action: Dict[str, Any], proposer_index: int) -> Dict[str, Any]:
+        if action.get("type") not in (PROPOSE_TRADE, ACCEPT_TRADE, DECLINE_TRADE):
+            return action
 
-        def add_action(action: Dict[str, Any]) -> bool:
-            key = (
-                action["target_player"],
-                tuple(sorted(action.get("offer_properties", []))),
-                tuple(sorted(action.get("request_properties", []))),
-                int(action.get("offer_money", 0)),
-                int(action.get("request_money", 0)),
-            )
-            if key in seen_actions:
-                return False
-            if not self._is_trade_strategically_reasonable(
-                player_index,
-                action["target_player"],
-                action.get("offer_properties", []),
-                int(action.get("offer_money", 0)),
-                action.get("request_properties", []),
-                int(action.get("request_money", 0)),
-            ):
-                return False
-            seen_actions.add(key)
-            actions.append(action)
-            return len(actions) >= max_actions
+        target_index = int(action.get("target_player", -1))
+        if action.get("type") in (ACCEPT_TRADE, DECLINE_TRADE):
+            target_index = self.pending_trade["to"] if self.pending_trade else target_index
 
-        for action in self._get_region_completion_trade_actions(player_index):
-            if add_action(action):
-                return actions
+        if not (0 <= proposer_index < self.num_players and 0 <= target_index < self.num_players):
+            return action
 
-        for action in self._get_balanced_trade_actions(player_index, max_actions=max_actions):
-            if add_action(action):
-                return actions
-
-        for target_index, target in enumerate(self.players):
-            if target_index == player_index or target.bankrupt:
-                continue
-
-            target_properties = self.get_tradeable_properties(target_index)
-            if not target_properties:
-                continue
-
-            for _ in range(2):
-                offer_property = rng.choice(proposer_properties)
-                request_property = rng.choice(target_properties)
-                offer_money = min(rng.choice([0, 50, 100, 150]), self.players[player_index].money)
-                request_money = min(rng.choice([0, 50, 100]), target.money)
-                if add_action(
-                    {
-                        "type": PROPOSE_TRADE,
-                        "target_player": target_index,
-                        "offer_properties": [offer_property],
-                        "offer_money": offer_money,
-                        "request_properties": [request_property],
-                        "request_money": request_money,
-                    }
-                ):
-                    return actions
-
-        return actions
-
-    def _get_balanced_trade_actions(self, player_index: int, max_actions: int = 10) -> List[Dict[str, Any]]:
-        actions = []
-        proposer_properties = self.get_tradeable_properties(player_index)
-        if not proposer_properties:
-            return actions
-
-        for target_index, target in enumerate(self.players):
-            if target_index == player_index or target.bankrupt:
-                continue
-
-            target_properties = self.get_tradeable_properties(target_index)
-            if not target_properties:
-                continue
-
-            candidate_pairs = []
-            for offer_property in proposer_properties:
-                for request_property in target_properties:
-                    if self.board[offer_property].group == self.board[request_property].group:
-                        continue
-
-                    proposer_delta, target_delta = self._estimate_trade_score_deltas(
-                        player_index,
-                        target_index,
-                        [offer_property],
-                        0,
-                        [request_property],
-                        0,
-                    )
-                    combined = proposer_delta + target_delta
-                    fairness = abs(proposer_delta - target_delta)
-                    candidate_pairs.append(
-                        (
-                            combined - fairness * 0.35,
-                            proposer_delta,
-                            target_delta,
-                            offer_property,
-                            request_property,
-                        )
-                    )
-
-            candidate_pairs.sort(reverse=True)
-            for _, proposer_delta, target_delta, offer_property, request_property in candidate_pairs[:4]:
-                offer_money, request_money = self._balancing_trade_money(
-                    player_index,
-                    target_index,
-                    proposer_delta,
-                    target_delta,
-                )
-                actions.append(
-                    {
-                        "type": PROPOSE_TRADE,
-                        "target_player": target_index,
-                        "offer_properties": [offer_property],
-                        "offer_money": offer_money,
-                        "request_properties": [request_property],
-                        "request_money": request_money,
-                    }
-                )
-                if len(actions) >= max_actions:
-                    return actions
-
-            for request_property in target_properties:
-                if not self._property_completes_group_for_player(request_property, player_index):
-                    continue
-                cash_offer = self._cash_offer_for_property(player_index, target_index, request_property)
-                if cash_offer > 0:
-                    actions.append(
-                        {
-                            "type": PROPOSE_TRADE,
-                            "target_player": target_index,
-                            "offer_properties": [],
-                            "offer_money": cash_offer,
-                            "request_properties": [request_property],
-                            "request_money": 0,
-                        }
-                    )
-                    if len(actions) >= max_actions:
-                        return actions
-
-        return actions
-
-    def _trade_action_random(self, player_index: int) -> random.Random:
-        ownership = tuple(
-            space.owner if space.is_ownable() else -2
-            for space in self.board
+        enriched = copy.deepcopy(action)
+        enriched["trade_features"] = self._trade_feature_payload(
+            proposer_index,
+            target_index,
+            list(enriched.get("offer_properties", [])),
+            int(enriched.get("offer_money", 0)),
+            list(enriched.get("request_properties", [])),
+            int(enriched.get("request_money", 0)),
         )
-        buildings = tuple(
-            space.houses if space.type == "property" else 0
-            for space in self.board
-        )
-        seed_data = (
-            self.seed,
-            player_index,
-            self.turn_count,
-            self.action_count,
-            self.phase,
-            tuple(player.position for player in self.players),
-            tuple(player.money for player in self.players),
-            ownership,
-            buildings,
-        )
-        return random.Random(repr(seed_data))
+        return enriched
 
-    def _get_region_completion_trade_actions(self, player_index: int) -> List[Dict[str, Any]]:
-        actions = []
-        for group, group_properties in GROUPS.items():
-            if self._group_has_buildings(group):
-                continue
-
-            owned = [i for i in group_properties if self.board[i].owner == player_index]
-            missing = [
-                i
-                for i in group_properties
-                if self.board[i].owner is not None
-                and self.board[i].owner != player_index
-                and self._is_tradeable_property(i, self.board[i].owner)
-            ]
-            if not owned or not missing or len(group_properties) - len(owned) > 2:
-                continue
-
-            for request_property in missing:
-                target_index = self.board[request_property].owner
-                offer_property = self._choose_trade_offer_property(player_index, target_index, protected_group=group)
-                offer_properties = [] if offer_property is None else [offer_property]
-                offer_money = self._trade_offer_money(player_index, request_property, len(group_properties) - len(owned))
-                if not offer_properties and offer_money <= 0:
-                    continue
-                actions.append(
-                    {
-                        "type": PROPOSE_TRADE,
-                        "target_player": target_index,
-                        "offer_properties": offer_properties,
-                        "offer_money": offer_money,
-                        "request_properties": [request_property],
-                        "request_money": 0,
-                    }
-                )
-        return actions
-
-    def _choose_trade_offer_property(self, player_index: int, target_index: int, protected_group: str) -> Optional[int]:
-        candidates = [
-            prop_index
-            for prop_index in self.get_tradeable_properties(player_index)
-            if self.board[prop_index].group != protected_group
-        ]
-        if not candidates:
-            return None
-
-        def offer_score(prop_index: int) -> tuple[int, int, int]:
-            space = self.board[prop_index]
-            target_group_count = 0
-            if space.group in GROUPS:
-                target_group_count = sum(1 for i in GROUPS[space.group] if self.board[i].owner == target_index)
-            return target_group_count, -space.price, -prop_index
-
-        return max(candidates, key=offer_score)
-
-    def _trade_offer_money(self, player_index: int, request_property: int, missing_count: int) -> int:
-        player = self.players[player_index]
-        requested_space = self.board[request_property]
-        strategic_value = self._trade_property_value(player_index, request_property)
-        target_offer = strategic_value if missing_count == 1 else strategic_value // 2
-        return max(0, min(player.money, target_offer))
-
-    def _balancing_trade_money(
+    def _trade_feature_payload(
         self,
         proposer_index: int,
         target_index: int,
-        proposer_delta: float,
-        target_delta: float,
-    ) -> tuple[int, int]:
-        difference = proposer_delta - target_delta
-        if abs(difference) <= TRADE_FAIRNESS_MARGIN:
-            return 0, 0
-
-        compensation = int(min(300, max(50, round(abs(difference) / 2.0 / 25.0) * 25)))
-        if difference > 0:
-            return min(compensation, self.players[proposer_index].money), 0
-        return 0, min(compensation, self.players[target_index].money)
-
-    def _cash_offer_for_property(self, player_index: int, target_index: int, request_property: int) -> int:
-        property_value = self._trade_property_value(player_index, request_property)
-        target_reserve = 100
-        max_cash = max(0, self.players[player_index].money - target_reserve)
-        offer = min(max_cash, int(property_value * 1.15))
-
+        offer_properties: List[int],
+        offer_money: int,
+        request_properties: List[int],
+        request_money: int,
+    ) -> Dict[str, float]:
         proposer_delta, target_delta = self._estimate_trade_score_deltas(
-            player_index,
+            proposer_index,
             target_index,
-            [],
-            offer,
-            [request_property],
-            0,
+            offer_properties,
+            offer_money,
+            request_properties,
+            request_money,
         )
-        if proposer_delta < -TRADE_FAIRNESS_MARGIN or target_delta < -TRADE_FAIRNESS_MARGIN:
-            return 0
-        return int(offer)
+        offer_value = sum(self._trade_property_value(target_index, prop_index) for prop_index in offer_properties)
+        request_value = sum(self._trade_property_value(proposer_index, prop_index) for prop_index in request_properties)
+
+        offer_completes_target = any(
+            self._property_completes_group_for_player(prop_index, target_index)
+            for prop_index in offer_properties
+        )
+        request_completes_proposer = any(
+            self._property_completes_group_for_player(prop_index, proposer_index)
+            for prop_index in request_properties
+        )
+        offer_near_target = any(
+            self._property_creates_near_group_for_player(prop_index, target_index)
+            for prop_index in offer_properties
+        )
+        request_near_proposer = any(
+            self._property_creates_near_group_for_player(prop_index, proposer_index)
+            for prop_index in request_properties
+        )
+        offer_critical_proposer = any(
+            self._property_is_critical_for_owner(prop_index, proposer_index)
+            for prop_index in offer_properties
+        )
+
+        return {
+            "proposer_delta": proposer_delta / 1000.0,
+            "target_delta": target_delta / 1000.0,
+            "delta_diff": (proposer_delta - target_delta) / 1000.0,
+            "offer_value": offer_value / 1000.0,
+            "request_value": request_value / 1000.0,
+            "offer_money": offer_money / 1500.0,
+            "request_money": request_money / 1500.0,
+            "offer_completes_target": 1.0 if offer_completes_target else 0.0,
+            "request_completes_proposer": 1.0 if request_completes_proposer else 0.0,
+            "offer_near_target": 1.0 if offer_near_target else 0.0,
+            "request_near_proposer": 1.0 if request_near_proposer else 0.0,
+            "offer_critical_proposer": 1.0 if offer_critical_proposer else 0.0,
+        }
 
     def _trade_property_value(self, player_index: int, prop_index: int) -> int:
         if not (0 <= prop_index < len(self.board)):

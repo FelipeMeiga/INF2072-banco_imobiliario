@@ -11,7 +11,15 @@ import torch
 torch.set_num_threads(1)
 
 from agents.neural_agent import NeuralAgent, QNetwork
+from agents.neat_agent import NeatAgent, load_neat_agent_checkpoint
 from agents.ppo_agent import PPOActorCritic, PPOAgent
+from game.encoders import (
+    DEFAULT_ENCODER,
+    ENCODER_RAW,
+    get_action_size,
+    get_state_size,
+    normalize_encoder_name,
+)
 from game.env import BancoImobiliarioEnv
 from ui.pygame_view import PygameView
 
@@ -21,6 +29,9 @@ MAX_STEP_DELAY_SECONDS = 2.0
 START_PAUSED = True
 FIXED_SEED_ENV = "BANCO_SEED"
 MODEL_PATH_ENV = "BANCO_MODEL_PATH"
+ENCODER_ENV = "BANCO_ENCODER"
+NEAT_MODEL_PATH = "models/best_neat_raw_agent.pkl"
+PPO_RAW_MODEL_PATH = "models/best_ppo_raw_agent.pt"
 PPO_MODEL_PATH = "models/best_ppo_agent.pt"
 DQN_MODEL_PATH = "models/best_dqn_agent.pt"
 
@@ -44,6 +55,10 @@ def resolve_model_path() -> str | None:
     explicit_path = os.environ.get(MODEL_PATH_ENV)
     if explicit_path:
         return explicit_path
+    if os.path.exists(NEAT_MODEL_PATH):
+        return NEAT_MODEL_PATH
+    if os.path.exists(PPO_RAW_MODEL_PATH):
+        return PPO_RAW_MODEL_PATH
     if os.path.exists(PPO_MODEL_PATH):
         return PPO_MODEL_PATH
     if os.path.exists(DQN_MODEL_PATH):
@@ -52,27 +67,66 @@ def resolve_model_path() -> str | None:
 
 
 def make_untrained_agents():
-    model = PPOActorCritic()
+    encoder_name = normalize_encoder_name(os.environ.get(ENCODER_ENV, ENCODER_RAW))
+    model = PPOActorCritic(
+        state_size=get_state_size(encoder_name),
+        action_size=get_action_size(encoder_name),
+    )
     return [
-        PPOAgent(player_id=i, model=model, deterministic=False)
+        PPOAgent(player_id=i, model=model, deterministic=False, encoder=encoder_name)
         for i in range(4)
     ]
 
 
 def load_agents(model_path: str, game_seed: int):
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    if model_path.lower().endswith(".pkl"):
+        network, metadata = load_neat_agent_checkpoint(model_path)
+        agents = [
+            NeatAgent(player_id=i, network=network, seed=game_seed + i)
+            for i in range(4)
+        ]
+        generation = metadata.get("generation")
+        label = "NEAT/raw"
+        if isinstance(generation, int):
+            label = f"{label}/gen{generation}"
+        return agents, label
+
     checkpoint = torch.load(model_path, map_location=device)
     algorithm = checkpoint.get("algorithm", "dqn")
 
     if algorithm == "ppo":
-        model = PPOActorCritic().to(device)
+        encoder_name = normalize_encoder_name(checkpoint.get("encoder", DEFAULT_ENCODER))
+        expected_state_size = get_state_size(encoder_name)
+        expected_action_size = get_action_size(encoder_name)
+        state_size = int(checkpoint.get("state_size", expected_state_size))
+        action_size = int(checkpoint.get("action_size", expected_action_size))
+        if state_size != expected_state_size or action_size != expected_action_size:
+            raise ValueError(
+                "Checkpoint PPO incompativel com o estado/acao atual: "
+                f"salvo=({state_size}, {action_size}), "
+                f"esperado=({expected_state_size}, {expected_action_size})"
+            )
+        hidden_size = int(checkpoint.get("hidden_size", 512))
+        model = PPOActorCritic(
+            state_size=state_size,
+            action_size=action_size,
+            hidden_size=hidden_size,
+        ).to(device)
         model.load_state_dict(checkpoint["model_state_dict"])
         model.eval()
         agents = [
-            PPOAgent(player_id=i, model=model, device=device, deterministic=True)
+            PPOAgent(
+                player_id=i,
+                model=model,
+                device=device,
+                deterministic=True,
+                encoder=encoder_name,
+            )
             for i in range(4)
         ]
-        return agents, "PPO"
+        return agents, f"PPO/{encoder_name}"
 
     model = QNetwork().to(device)
     model.load_state_dict(checkpoint["model_state_dict"])
@@ -97,12 +151,12 @@ def make_env_and_agents():
         except (RuntimeError, KeyError, ValueError) as exc:
             print("Nao foi possivel carregar o modelo salvo.")
             print("Isso e esperado apos mudancas no estado, nas acoes ou na arquitetura.")
-            print("Treine novamente com: python train_ppo.py --episodes 300")
+            print("Treine novamente com: py train_ppo.py --episodes 300")
             print(f"Detalhe tecnico: {exc}")
             agents = make_untrained_agents()
     else:
         print("Modelo treinado nao encontrado. Rodando PPO nao treinado.")
-        print("Para treinar: python train_ppo.py --episodes 300")
+        print("Para treinar: py train_ppo.py --episodes 300")
         agents = make_untrained_agents()
 
     return env, agents

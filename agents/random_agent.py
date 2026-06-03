@@ -3,14 +3,18 @@ from typing import Any, Dict, List
 
 from game.actions import (
     ACCEPT_TRADE,
+    CANCEL_TRADE,
     AUCTION_BID,
     BUILD_HOUSE,
     BUY_PROPERTY,
     DECLINE_TRADE,
+    FINISH_TRADE_OFFER,
+    FINISH_TRADE_REQUEST,
     MORTGAGE_PROPERTY,
     PAY_JAIL_FINE,
-    PROPOSE_TRADE,
     ROLL_DICE,
+    START_TRADE,
+    SUBMIT_TRADE,
     SELL_HOUSE,
     UNMORTGAGE_PROPERTY,
     USE_JAIL_CARD,
@@ -50,9 +54,21 @@ class RandomAgent:
         if auction_bid_actions and self.random.random() < 0.65:
             return self.random.choice(auction_bid_actions)
 
-        trade_actions = [a for a in valid_actions if a["type"] == PROPOSE_TRADE]
-        if trade_actions and self.random.random() < 0.25:
-            return self.random.choice(trade_actions)
+        start_trade_actions = [a for a in valid_actions if a["type"] == START_TRADE]
+        if start_trade_actions and self.random.random() < 0.15:
+            return start_trade_actions[0]
+
+        submit_trade_actions = [a for a in valid_actions if a["type"] == SUBMIT_TRADE]
+        if submit_trade_actions and self.random.random() < 0.65:
+            return submit_trade_actions[0]
+
+        finish_trade_actions = [
+            a
+            for a in valid_actions
+            if a["type"] in (FINISH_TRADE_OFFER, FINISH_TRADE_REQUEST)
+        ]
+        if finish_trade_actions and self.random.random() < 0.35:
+            return finish_trade_actions[0]
 
         accept_actions = [a for a in valid_actions if a["type"] == ACCEPT_TRADE]
         if accept_actions and self.random.random() < 0.65:
@@ -76,5 +92,9 @@ class RandomAgent:
         ]
         if defensive_actions and money < 150:
             return self.random.choice(defensive_actions)
+
+        cancel_trade_actions = [a for a in valid_actions if a["type"] == CANCEL_TRADE]
+        if cancel_trade_actions and len(valid_actions) == 1:
+            return cancel_trade_actions[0]
 
         return self.random.choice(valid_actions)

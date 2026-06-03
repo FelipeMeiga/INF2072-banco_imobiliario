@@ -13,9 +13,17 @@ import torch
 torch.set_num_threads(1)
 
 from agents.neural_agent import NeuralAgent, QNetwork
+from agents.neat_agent import NeatAgent, load_neat_agent_checkpoint
 from agents.ppo_agent import PPOActorCritic, PPOAgent
 from agents.random_agent import RandomAgent
-from game.encoders import ACTION_SIZE, STATE_SIZE
+from game.encoders import (
+    ACTION_SIZE,
+    DEFAULT_ENCODER,
+    STATE_SIZE,
+    get_action_size,
+    get_state_size,
+    normalize_encoder_name,
+)
 from game.env import BancoImobiliarioEnv
 
 
@@ -26,6 +34,7 @@ class Competitor:
     path: Optional[str] = None
     model: Optional[object] = None
     episode: Optional[int] = None
+    encoder: str = DEFAULT_ENCODER
 
 
 class PureRandomAgent:
@@ -91,6 +100,7 @@ def discover_checkpoints(paths: Iterable[str]) -> List[str]:
         path = Path(raw_path)
         if path.is_dir():
             checkpoint_paths.extend(str(item) for item in sorted(path.glob("*.pt")))
+            checkpoint_paths.extend(str(item) for item in sorted(path.glob("*.pkl")))
         elif path.is_file():
             checkpoint_paths.append(str(path))
 
@@ -98,26 +108,67 @@ def discover_checkpoints(paths: Iterable[str]) -> List[str]:
 
 
 def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
+    if path.lower().endswith(".pkl"):
+        try:
+            network, metadata = load_neat_agent_checkpoint(path)
+        except Exception as exc:
+            print(f"Ignorando checkpoint NEAT invalido {path}: {exc}")
+            return None
+
+        generation = metadata.get("generation")
+        name = f"neat_raw_gen{generation:04d}" if isinstance(generation, int) else Path(path).stem
+        return Competitor(
+            name=name,
+            kind="neat",
+            path=path,
+            model=network,
+            episode=generation if isinstance(generation, int) else None,
+            encoder="raw",
+        )
+
     try:
         checkpoint = torch.load(path, map_location=device)
     except Exception as exc:
         print(f"Ignorando checkpoint invalido {path}: {exc}")
         return None
 
-    state_size = checkpoint.get("state_size")
-    action_size = checkpoint.get("action_size")
-    if state_size != STATE_SIZE or action_size != ACTION_SIZE:
-        print(
-            f"Ignorando checkpoint incompativel {path}: "
-            f"state/action salvos=({state_size}, {action_size}), atuais=({STATE_SIZE}, {ACTION_SIZE})"
-        )
-        return None
-
     algorithm = checkpoint.get("algorithm", "dqn")
     if algorithm == "ppo":
-        model = PPOActorCritic().to(device)
+        try:
+            encoder_name = normalize_encoder_name(checkpoint.get("encoder", DEFAULT_ENCODER))
+        except ValueError as exc:
+            print(f"Ignorando checkpoint PPO incompativel {path}: {exc}")
+            return None
+
+        expected_state_size = get_state_size(encoder_name)
+        expected_action_size = get_action_size(encoder_name)
+        state_size = int(checkpoint.get("state_size", expected_state_size))
+        action_size = int(checkpoint.get("action_size", expected_action_size))
+        if state_size != expected_state_size or action_size != expected_action_size:
+            print(
+                f"Ignorando checkpoint PPO incompativel {path}: "
+                f"encoder={encoder_name}, salvos=({state_size}, {action_size}), "
+                f"esperados=({expected_state_size}, {expected_action_size})"
+            )
+            return None
+
+        hidden_size = int(checkpoint.get("hidden_size", 512))
+        model = PPOActorCritic(
+            state_size=state_size,
+            action_size=action_size,
+            hidden_size=hidden_size,
+        ).to(device)
         kind = "ppo"
     else:
+        state_size = checkpoint.get("state_size")
+        action_size = checkpoint.get("action_size")
+        if state_size != STATE_SIZE or action_size != ACTION_SIZE:
+            print(
+                f"Ignorando checkpoint DQN incompativel {path}: "
+                f"state/action salvos=({state_size}, {action_size}), atuais=({STATE_SIZE}, {ACTION_SIZE})"
+            )
+            return None
+        encoder_name = DEFAULT_ENCODER
         model = QNetwork().to(device)
         kind = "dqn"
 
@@ -126,6 +177,8 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
 
     episode = checkpoint.get("episode")
     prefix = "ppo" if kind == "ppo" else "dqn"
+    if kind == "ppo" and encoder_name != DEFAULT_ENCODER:
+        prefix = f"{prefix}_{encoder_name}"
     suffix = f"{prefix}_ep{episode:04d}" if isinstance(episode, int) else Path(path).stem
     return Competitor(
         name=suffix,
@@ -133,6 +186,7 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
         path=path,
         model=model,
         episode=episode if isinstance(episode, int) else None,
+        encoder=encoder_name,
     )
 
 
@@ -150,6 +204,15 @@ def make_agent(competitor: Competitor, seat: int, seed: int, device: str):
             model=competitor.model,
             device=device,
             deterministic=True,
+            encoder=competitor.encoder,
+        )
+
+    if competitor.kind == "neat":
+        assert competitor.model is not None
+        return NeatAgent(
+            player_id=seat,
+            network=competitor.model,
+            seed=seed,
         )
 
     assert competitor.model is not None

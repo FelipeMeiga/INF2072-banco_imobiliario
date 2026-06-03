@@ -8,7 +8,16 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical
 
-from game.encoders import ACTION_SIZE, STATE_SIZE, encode_action, encode_state
+from game.encoders import (
+    ACTION_SIZE,
+    DEFAULT_ENCODER,
+    STATE_SIZE,
+    encode_action,
+    encode_state,
+    get_action_size,
+    get_state_size,
+    normalize_encoder_name,
+)
 
 
 class PPOActorCritic(nn.Module):
@@ -20,17 +29,25 @@ class PPOActorCritic(nn.Module):
     masking without requiring a fixed action head.
     """
 
-    def __init__(self, hidden_size: int = 512):
+    def __init__(
+        self,
+        state_size: int = STATE_SIZE,
+        action_size: int = ACTION_SIZE,
+        hidden_size: int = 512,
+    ):
         super().__init__()
+        self.state_size = state_size
+        self.action_size = action_size
+        self.hidden_size = hidden_size
         self.actor = nn.Sequential(
-            nn.Linear(STATE_SIZE + ACTION_SIZE, hidden_size),
+            nn.Linear(state_size + action_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, 1),
         )
         self.critic = nn.Sequential(
-            nn.Linear(STATE_SIZE, hidden_size),
+            nn.Linear(state_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
@@ -62,9 +79,18 @@ class PPOAgent:
         model: Optional[PPOActorCritic] = None,
         device: Optional[str] = None,
         deterministic: bool = True,
+        encoder: str = DEFAULT_ENCODER,
     ):
         self.player_id = player_id
-        self.model = model or PPOActorCritic()
+        self.encoder = normalize_encoder_name(encoder)
+        self.state_size = get_state_size(self.encoder)
+        self.action_size = get_action_size(self.encoder)
+        self.model = model or PPOActorCritic(
+            state_size=self.state_size,
+            action_size=self.action_size,
+        )
+        self.state_size = int(getattr(self.model, "state_size", self.state_size))
+        self.action_size = int(getattr(self.model, "action_size", self.action_size))
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.deterministic = deterministic
         self.model.to(self.device)
@@ -77,19 +103,22 @@ class PPOAgent:
         deterministic: Optional[bool] = None,
     ) -> PPOActionSelection:
         if not valid_actions:
-            state_vec = encode_state(state)
+            state_vec = encode_state(state, encoder=self.encoder)
             return PPOActionSelection(
                 action={"type": "no_action"},
                 action_index=0,
                 log_prob=0.0,
                 value=0.0,
                 state_vec=state_vec,
-                action_vecs=np.zeros((1, ACTION_SIZE), dtype=np.float32),
+                action_vecs=np.zeros((1, self.action_size), dtype=np.float32),
             )
 
         deterministic = self.deterministic if deterministic is None else deterministic
-        state_vec = encode_state(state)
-        action_vecs = np.stack([encode_action(action) for action in valid_actions], axis=0)
+        state_vec = encode_state(state, encoder=self.encoder)
+        action_vecs = np.stack(
+            [encode_action(action, encoder=self.encoder) for action in valid_actions],
+            axis=0,
+        )
 
         state_batch = np.repeat(state_vec[None, :], len(valid_actions), axis=0)
         state_tensor = torch.tensor(state_batch, dtype=torch.float32, device=self.device)
@@ -123,6 +152,29 @@ class PPOAgent:
 
     def load(self, path: str):
         checkpoint = torch.load(path, map_location=self.device)
+        encoder = normalize_encoder_name(checkpoint.get("encoder", self.encoder))
+        expected_state_size = get_state_size(encoder)
+        expected_action_size = get_action_size(encoder)
+        state_size = int(checkpoint.get("state_size", expected_state_size))
+        action_size = int(checkpoint.get("action_size", expected_action_size))
+        if state_size != expected_state_size or action_size != expected_action_size:
+            raise ValueError(
+                "Checkpoint PPO incompativel com o estado/acao atual: "
+                f"salvo=({state_size}, {action_size}), "
+                f"esperado=({expected_state_size}, {expected_action_size})"
+            )
+        hidden_size = int(checkpoint.get("hidden_size", getattr(self.model, "hidden_size", 512)))
+
+        if state_size != self.state_size or action_size != self.action_size:
+            self.model = PPOActorCritic(
+                state_size=state_size,
+                action_size=action_size,
+                hidden_size=hidden_size,
+            )
+
+        self.encoder = encoder
+        self.state_size = state_size
+        self.action_size = action_size
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model.to(self.device)
         self.model.eval()

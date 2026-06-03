@@ -190,8 +190,9 @@ class PygameView:
         pygame.draw.rect(self.screen, BLACK, panel, 2, border_radius=8)
 
         pending_trade = getattr(env, "pending_trade", None)
+        trade_draft = getattr(env, "trade_draft", None)
         last_trade_result = getattr(env, "last_trade_result", None)
-        trade = pending_trade or last_trade_result
+        trade = pending_trade or trade_draft or last_trade_result
 
         y = panel.y + 16
         title = self.font.render("Trocas", True, BLACK)
@@ -203,10 +204,15 @@ class PygameView:
             return
 
         proposer = env.players[trade["from"]]
-        target = env.players[trade["to"]]
+        target_index = trade.get("to")
+        target = env.players[target_index] if target_index is not None else None
 
         if pending_trade:
             subtitle_text = f"{proposer.name} -> {target.name}"
+            subtitle_color = DARK_GRAY
+        elif trade_draft:
+            target_name = target.name if target is not None else "alvo..."
+            subtitle_text = f"Montando: {proposer.name} -> {target_name}"
             subtitle_color = DARK_GRAY
         else:
             status = trade.get("status")
@@ -221,7 +227,7 @@ class PygameView:
 
         if not pending_trade:
             matchup = self.tiny_font.render(
-                f"{proposer.name} -> {target.name}",
+                f"{proposer.name} -> {target.name if target is not None else 'alvo...'}",
                 True,
                 DARK_GRAY,
             )
@@ -251,11 +257,13 @@ class PygameView:
         )
 
     def _draw_trade_column(self, title, player, properties, money, env, rect):
+        player_color = player.color if player is not None else DARK_GRAY
+
         pygame.draw.rect(self.screen, WHITE, rect, border_radius=6)
-        pygame.draw.rect(self.screen, player.color, rect, 2, border_radius=6)
+        pygame.draw.rect(self.screen, player_color, rect, 2, border_radius=6)
 
         y = rect.y + 10
-        title_text = self.small_font.render(title, True, player.color)
+        title_text = self.small_font.render(title, True, player_color)
         self.screen.blit(title_text, (rect.x + 10, y))
         y += 28
 
@@ -360,8 +368,10 @@ class PygameView:
 
         y += 15
 
-        if env.pending_trade:
+        if getattr(env, "pending_trade", None):
             y = self._draw_pending_trade(env, y)
+        elif getattr(env, "trade_draft", None):
+            y = self._draw_trade_draft(env, y)
         else:
             y = self._draw_current_space(env, y)
 
@@ -444,6 +454,19 @@ class PygameView:
 
     def _draw_pending_trade(self, env, y):
         lines = env.describe_pending_trade()
+
+        for line in lines[:16]:
+            if line == "":
+                y += 8
+                continue
+            text = self.tiny_font.render(line, True, BLACK)
+            self.screen.blit(text, (SIDE_PANEL_X + 20, y))
+            y += 18
+
+        return y
+
+    def _draw_trade_draft(self, env, y):
+        lines = env.describe_trade_draft()
 
         for line in lines[:16]:
             if line == "":

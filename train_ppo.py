@@ -17,7 +17,14 @@ import torch.optim as optim
 from torch.distributions import Categorical
 
 from agents.ppo_agent import PPOActorCritic, PPOAgent
-from game.encoders import ACTION_SIZE, STATE_SIZE
+from game.board import GROUPS
+from game.encoders import (
+    ENCODER_NAMES,
+    ENCODER_RAW,
+    get_action_size,
+    get_state_size,
+    normalize_encoder_name,
+)
 from game.env import BancoImobiliarioEnv
 from tournament import discover_checkpoints, load_competitors, print_scoreboard, run_tournament
 
@@ -35,6 +42,7 @@ SAVE_EVERY = 50
 REWARD_CLIP_MIN = -10.0
 REWARD_CLIP_MAX = 10.0
 UPDATE_EVERY_EPISODES = 4
+TRADE_CURRICULUM_RATIO = 0.35
 
 
 @dataclass
@@ -56,7 +64,12 @@ def get_acting_player(env: BancoImobiliarioEnv) -> int:
     return env.current_player_index
 
 
-def save_checkpoint(model: PPOActorCritic, episode: int, output_path: str):
+def save_checkpoint(
+    model: PPOActorCritic,
+    episode: int,
+    output_path: str,
+    encoder_name: str,
+):
     output_dir = os.path.dirname(output_path)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -64,10 +77,12 @@ def save_checkpoint(model: PPOActorCritic, episode: int, output_path: str):
     torch.save(
         {
             "algorithm": "ppo",
+            "encoder": encoder_name,
             "model_state_dict": model.state_dict(),
             "episode": episode,
-            "state_size": STATE_SIZE,
-            "action_size": ACTION_SIZE,
+            "state_size": model.state_size,
+            "action_size": model.action_size,
+            "hidden_size": model.hidden_size,
         },
         output_path,
     )
@@ -237,6 +252,60 @@ def run_checkpoint_championship(
     return ranked[0] if ranked else None
 
 
+def setup_trade_curriculum(env: BancoImobiliarioEnv, rng: random.Random):
+    groups = [group for group, props in GROUPS.items() if len(props) >= 3]
+    if len(groups) < 2:
+        return
+
+    group_a, group_b = rng.sample(groups, 2)
+    props_a = list(GROUPS[group_a])
+    props_b = list(GROUPS[group_b])
+    rng.shuffle(props_a)
+    rng.shuffle(props_b)
+
+    player_a = rng.randrange(env.num_players)
+    player_b = (player_a + rng.randrange(1, env.num_players)) % env.num_players
+
+    for space in env.board:
+        if space.is_ownable():
+            space.owner = None
+            space.houses = 0
+            space.mortgaged = False
+
+    env.board[props_a[0]].owner = player_a
+    env.board[props_a[1]].owner = player_a
+    env.board[props_a[2]].owner = player_b
+
+    env.board[props_b[0]].owner = player_b
+    env.board[props_b[1]].owner = player_b
+    env.board[props_b[2]].owner = player_a
+
+    available_props = [
+        index
+        for index, space in enumerate(env.board)
+        if space.is_ownable() and space.owner is None
+    ]
+    rng.shuffle(available_props)
+    for prop_index in available_props[: rng.randint(2, 6)]:
+        env.board[prop_index].owner = rng.randrange(env.num_players)
+
+    for player in env.players:
+        player.money = rng.randint(450, 1500)
+        player.position = 0
+        player.bankrupt = False
+        player.in_jail = False
+        player.jail_turns = 0
+
+    env.current_player_index = rng.choice([player_a, player_b])
+    env.phase = "ready_to_roll"
+    env.trade_draft = None
+    env.pending_trade = None
+    env.last_trade_result = None
+    env.auction = None
+    env.trade_proposed_this_turn = False
+    env.last_message = "Curriculum de trocas iniciado."
+
+
 def train(
     episodes: int,
     seed: int,
@@ -248,15 +317,29 @@ def train(
     tournament_latest: int,
     best_output_path: str,
     update_every_episodes: int,
+    trade_curriculum_ratio: float,
+    encoder_name: str,
+    hidden_size: int,
 ):
+    encoder_name = normalize_encoder_name(encoder_name)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Treinando PPO em: {device}")
+    print(
+        f"Encoder: {encoder_name} | "
+        f"state_size={get_state_size(encoder_name)} | "
+        f"action_size={get_action_size(encoder_name)} | "
+        f"hidden_size={hidden_size}"
+    )
 
-    model = PPOActorCritic().to(device)
+    model = PPOActorCritic(
+        state_size=get_state_size(encoder_name),
+        action_size=get_action_size(encoder_name),
+        hidden_size=hidden_size,
+    ).to(device)
     model.eval()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     rng = random.Random(seed)
@@ -273,16 +356,24 @@ def train(
 
     for episode in range(1, episodes + 1):
         env = BancoImobiliarioEnv(num_players=4, seed=seed + episode)
+        curriculum_episode = rng.random() < trade_curriculum_ratio
+        if curriculum_episode:
+            setup_trade_curriculum(env, rng)
+
         agent = PPOAgent(
             player_id=0,
             model=model,
             device=device,
             deterministic=False,
+            encoder=encoder_name,
         )
 
         transitions: List[PPOTransition] = []
         total_reward = 0.0
         steps = 0
+        trade_proposals = 0
+        trade_accepts = 0
+        trade_declines = 0
 
         while not env.done:
             state = env.get_state()
@@ -297,8 +388,16 @@ def train(
                 break
 
             selection = agent.select_action(state, valid_actions, deterministic=False)
+            action_type = selection.action.get("type")
             _, raw_reward, done, _ = env.step(selection.action)
             reward = max(REWARD_CLIP_MIN, min(REWARD_CLIP_MAX, raw_reward))
+
+            if action_type in ("propose_trade", "submit_trade"):
+                trade_proposals += 1
+            elif action_type == "accept_trade":
+                trade_accepts += 1
+            elif action_type == "decline_trade":
+                trade_declines += 1
 
             transitions.append(
                 PPOTransition(
@@ -334,11 +433,12 @@ def train(
         )
 
         if should_save_main:
-            save_checkpoint(model, episode, output_path)
+            save_checkpoint(model, episode, output_path, encoder_name)
 
         if should_save_checkpoint:
-            checkpoint_path = str(Path(checkpoint_dir) / f"ppo_ep_{episode:06d}.pt")
-            save_checkpoint(model, episode, checkpoint_path)
+            checkpoint_prefix = "ppo_raw_ep" if encoder_name == ENCODER_RAW else "ppo_ep"
+            checkpoint_path = str(Path(checkpoint_dir) / f"{checkpoint_prefix}_{episode:06d}.pt")
+            save_checkpoint(model, episode, checkpoint_path, encoder_name)
 
         if (
             checkpoint_dir is not None
@@ -373,11 +473,14 @@ def train(
         winner = env.winner
         winner_name = env.players[winner].name if winner is not None else "nenhum"
         update_marker = "sim" if updated else "nao"
+        curriculum_marker = "sim" if curriculum_episode else "nao"
         print(
             f"Episodio {episode:04d} | "
             f"steps={steps:04d} | "
             f"reward={total_reward:8.2f} | "
             f"update={update_marker} | "
+            f"trade_curr={curriculum_marker} | "
+            f"trades={trade_proposals}/{trade_accepts}/{trade_declines} | "
             f"loss={last_metrics['loss']:.5f} | "
             f"policy={last_metrics['policy_loss']:.5f} | "
             f"value={last_metrics['value_loss']:.5f} | "
@@ -392,27 +495,43 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--episodes", type=int, default=300)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--output", type=str, default="models/ppo_agent.pt")
-    parser.add_argument("--checkpoint-dir", type=str, default="models/ppo_checkpoints")
+    parser.add_argument("--encoder", type=str, choices=ENCODER_NAMES, default=ENCODER_RAW)
+    parser.add_argument("--hidden-size", type=int, default=512)
+    parser.add_argument("--output", type=str, default=None)
+    parser.add_argument("--checkpoint-dir", type=str, default=None)
     parser.add_argument("--checkpoint-every", type=int, default=SAVE_EVERY)
     parser.add_argument("--tournament-every", type=int, default=0)
     parser.add_argument("--tournament-games", type=int, default=24)
     parser.add_argument("--tournament-latest", type=int, default=8)
-    parser.add_argument("--best-output", type=str, default="models/best_ppo_agent.pt")
+    parser.add_argument("--best-output", type=str, default=None)
     parser.add_argument("--update-every-episodes", type=int, default=UPDATE_EVERY_EPISODES)
+    parser.add_argument("--trade-curriculum-ratio", type=float, default=TRADE_CURRICULUM_RATIO)
     args = parser.parse_args()
+
+    encoder_name = normalize_encoder_name(args.encoder)
+    if encoder_name == ENCODER_RAW:
+        output_path = args.output or "models/ppo_raw_agent.pt"
+        checkpoint_dir = args.checkpoint_dir or "models/ppo_raw_checkpoints"
+        best_output_path = args.best_output or "models/best_ppo_raw_agent.pt"
+    else:
+        output_path = args.output or "models/ppo_agent.pt"
+        checkpoint_dir = args.checkpoint_dir or "models/ppo_checkpoints"
+        best_output_path = args.best_output or "models/best_ppo_agent.pt"
 
     train(
         episodes=args.episodes,
         seed=args.seed,
-        output_path=args.output,
-        checkpoint_dir=args.checkpoint_dir,
+        output_path=output_path,
+        checkpoint_dir=checkpoint_dir,
         checkpoint_every=args.checkpoint_every,
         tournament_every=args.tournament_every,
         tournament_games=args.tournament_games,
         tournament_latest=args.tournament_latest,
-        best_output_path=args.best_output,
+        best_output_path=best_output_path,
         update_every_episodes=max(1, args.update_every_episodes),
+        trade_curriculum_ratio=max(0.0, min(1.0, args.trade_curriculum_ratio)),
+        encoder_name=encoder_name,
+        hidden_size=max(32, args.hidden_size),
     )
 
 
