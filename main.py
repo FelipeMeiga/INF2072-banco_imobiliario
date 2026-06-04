@@ -30,6 +30,7 @@ START_PAUSED = True
 FIXED_SEED_ENV = "BANCO_SEED"
 MODEL_PATH_ENV = "BANCO_MODEL_PATH"
 ENCODER_ENV = "BANCO_ENCODER"
+PPO_DETERMINISTIC_ENV = "BANCO_PPO_DETERMINISTIC"
 NEAT_MODEL_PATH = "models/best_neat_raw_agent.pkl"
 PPO_RAW_MODEL_PATH = "models/best_ppo_raw_agent.pt"
 PPO_MODEL_PATH = "models/best_ppo_agent.pt"
@@ -64,6 +65,11 @@ def resolve_model_path() -> str | None:
     if os.path.exists(DQN_MODEL_PATH):
         return DQN_MODEL_PATH
     return None
+
+
+def use_deterministic_ppo() -> bool:
+    value = os.environ.get(PPO_DETERMINISTIC_ENV, "").strip().lower()
+    return value in {"1", "true", "sim", "yes", "y"}
 
 
 def make_untrained_agents():
@@ -116,17 +122,19 @@ def load_agents(model_path: str, game_seed: int):
         ).to(device)
         model.load_state_dict(checkpoint["model_state_dict"])
         model.eval()
+        deterministic = use_deterministic_ppo()
         agents = [
             PPOAgent(
                 player_id=i,
                 model=model,
                 device=device,
-                deterministic=True,
+                deterministic=deterministic,
                 encoder=encoder_name,
             )
             for i in range(4)
         ]
-        return agents, f"PPO/{encoder_name}"
+        mode = "deterministico" if deterministic else "estocastico"
+        return agents, f"PPO/{encoder_name}/{mode}"
 
     model = QNetwork().to(device)
     model.load_state_dict(checkpoint["model_state_dict"])

@@ -45,7 +45,13 @@ py main_github.py
 Treinar o PPO atual com encoder `raw`, voltado a comportamento mais emergente:
 
 ```bash
-python train_ppo.py --episodes 2000 --tournament-every 100 --tournament-games 100
+py train_ppo.py --episodes 2000 --tournament-every 100 --tournament-games 100
+```
+
+Para manter mais exploracao, especialmente nas trocas, ajuste a entropia:
+
+```bash
+py train_ppo.py --episodes 2000 --entropy-coef 0.05 --tournament-every 100 --tournament-games 100
 ```
 
 Esse comando salva modelos em:
@@ -55,6 +61,20 @@ models/ppo_raw_agent.pt
 models/ppo_raw_checkpoints/
 models/best_ppo_raw_agent.pt
 ```
+
+Retomar o PPO a partir de um checkpoint:
+
+```bash
+py train_ppo.py --resume models/ppo_raw_checkpoints/ppo_raw_ep_000700.pt --episodes 2000 --tournament-every 100 --tournament-games 100
+```
+
+Nesse caso, `--episodes 2000` significa episodio final alvo. Se o checkpoint
+esta no episodio 700, o treino continua do episodio 701 ate o 2000. Checkpoints
+novos salvam estado do modelo, otimizador, RNGs e rollout parcial do PPO.
+
+Observacao: o encoder `raw` atual tem `state_size=318` e `action_size=151`.
+O encoder `rich` atual tem `state_size=494` e `action_size=163`. Checkpoints
+PPO antigos com tamanhos diferentes sao ignorados ou precisam ser retreinados.
 
 Treinar o PPO antigo com encoder `rich`, que entrega mais features estrategicas
 prontas para a rede:
@@ -438,12 +458,49 @@ Regras importantes:
 - propriedades de um grupo com casas ou hotel nao podem ser negociadas;
 - uma troca precisa ter contrapartida dos dois lados;
 - doacoes unilaterais de dinheiro/propriedade sao bloqueadas;
+- trocas puramente dinheiro-por-dinheiro sao bloqueadas;
 - propriedades hipotecadas podem ser negociadas;
 - ao receber propriedade hipotecada, o novo dono paga os juros de transferencia
   quando aplicavel.
 
 Essas regras evitam casos como um jogador doar terreno sem motivo ou transferir
 um grupo construido mantendo casas no terreno.
+
+## PPO e trocas
+
+O PPO usa uma politica compartilhada entre os quatro jogadores. Para evitar que
+uma recompensa de um jogador contamine a decisao de outro, o treino separa as
+trajetorias por jogador dentro de cada partida.
+
+Em cada `env.step`, o ambiente retorna `rewards_by_player` com a mudanca real de
+patrimonio de cada jogador. O treino acumula essa recompensa na ultima decisao
+do respectivo jogador. Com isso, se um jogador monta uma proposta ruim e outro
+aceita depois, o prejuizo volta para a decisao de propor a troca.
+
+O estado tambem codifica o jogador que esta agindo de fato. Em resposta de
+troca, `current_player` no estado passa a ser quem decide aceitar ou recusar,
+nao apenas o jogador dono do turno original.
+
+Para facilitar trocas emergentes sem entregar propostas prontas, o encoder inclui
+features compactas de complementaridade:
+
+- se o jogador atual consegue completar um grupo pegando propriedade de cada
+  adversario;
+- se o adversario consegue completar um grupo pegando propriedade do jogador
+  atual;
+- se existe complementaridade mutua, como `2/3 Orange` contra `2/3 Pink`.
+
+O curriculum de trocas cria algumas partidas com estados complementares, mas o
+agente ainda precisa decidir iniciar, montar, enviar, aceitar ou recusar a troca.
+
+Durante o treino, o campo `trades` no log usa o formato:
+
+```text
+trades=inicios/envios/cancelamentos/aceites/recusas
+```
+
+Exemplo: `trades=8/2/5/1/1` significa que o agente iniciou 8 montagens de troca,
+enviou 2 propostas, cancelou 5, teve 1 aceite e 1 recusa.
 
 ## Anti-loops financeiros
 

@@ -107,12 +107,13 @@ def discover_checkpoints(paths: Iterable[str]) -> List[str]:
     return sorted(dict.fromkeys(checkpoint_paths))
 
 
-def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
+def load_checkpoint_competitor(path: str, device: str, verbose: bool = True) -> Optional[Competitor]:
     if path.lower().endswith(".pkl"):
         try:
             network, metadata = load_neat_agent_checkpoint(path)
         except Exception as exc:
-            print(f"Ignorando checkpoint NEAT invalido {path}: {exc}")
+            if verbose:
+                print(f"Ignorando checkpoint NEAT invalido {path}: {exc}")
             return None
 
         generation = metadata.get("generation")
@@ -129,7 +130,8 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
     try:
         checkpoint = torch.load(path, map_location=device)
     except Exception as exc:
-        print(f"Ignorando checkpoint invalido {path}: {exc}")
+        if verbose:
+            print(f"Ignorando checkpoint invalido {path}: {exc}")
         return None
 
     algorithm = checkpoint.get("algorithm", "dqn")
@@ -137,7 +139,8 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
         try:
             encoder_name = normalize_encoder_name(checkpoint.get("encoder", DEFAULT_ENCODER))
         except ValueError as exc:
-            print(f"Ignorando checkpoint PPO incompativel {path}: {exc}")
+            if verbose:
+                print(f"Ignorando checkpoint PPO incompativel {path}: {exc}")
             return None
 
         expected_state_size = get_state_size(encoder_name)
@@ -145,11 +148,12 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
         state_size = int(checkpoint.get("state_size", expected_state_size))
         action_size = int(checkpoint.get("action_size", expected_action_size))
         if state_size != expected_state_size or action_size != expected_action_size:
-            print(
-                f"Ignorando checkpoint PPO incompativel {path}: "
-                f"encoder={encoder_name}, salvos=({state_size}, {action_size}), "
-                f"esperados=({expected_state_size}, {expected_action_size})"
-            )
+            if verbose:
+                print(
+                    f"Ignorando checkpoint PPO incompativel {path}: "
+                    f"encoder={encoder_name}, salvos=({state_size}, {action_size}), "
+                    f"esperados=({expected_state_size}, {expected_action_size})"
+                )
             return None
 
         hidden_size = int(checkpoint.get("hidden_size", 512))
@@ -163,10 +167,11 @@ def load_checkpoint_competitor(path: str, device: str) -> Optional[Competitor]:
         state_size = checkpoint.get("state_size")
         action_size = checkpoint.get("action_size")
         if state_size != STATE_SIZE or action_size != ACTION_SIZE:
-            print(
-                f"Ignorando checkpoint DQN incompativel {path}: "
-                f"state/action salvos=({state_size}, {action_size}), atuais=({STATE_SIZE}, {ACTION_SIZE})"
-            )
+            if verbose:
+                print(
+                    f"Ignorando checkpoint DQN incompativel {path}: "
+                    f"state/action salvos=({state_size}, {action_size}), atuais=({STATE_SIZE}, {ACTION_SIZE})"
+                )
             return None
         encoder_name = DEFAULT_ENCODER
         model = QNetwork().to(device)
@@ -374,15 +379,28 @@ def print_scoreboard(stats: Dict[str, CompetitorStats], limit: Optional[int] = N
         )
 
 
-def load_competitors(checkpoint_paths: List[str], device: str, limit_latest: Optional[int] = None) -> List[Competitor]:
-    if limit_latest is not None and limit_latest > 0:
-        checkpoint_paths = checkpoint_paths[-limit_latest:]
+def _competitor_sort_key(competitor: Competitor) -> tuple[int, str]:
+    episode = competitor.episode if competitor.episode is not None else -1
+    return episode, competitor.path or competitor.name
 
+
+def load_competitors(checkpoint_paths: List[str], device: str, limit_latest: Optional[int] = None) -> List[Competitor]:
     competitors = []
+    skipped = 0
     for path in checkpoint_paths:
-        competitor = load_checkpoint_competitor(path, device=device)
+        competitor = load_checkpoint_competitor(path, device=device, verbose=False)
         if competitor is not None:
             competitors.append(competitor)
+        else:
+            skipped += 1
+
+    competitors.sort(key=_competitor_sort_key)
+    if limit_latest is not None and limit_latest > 0:
+        competitors = competitors[-limit_latest:]
+
+    if skipped:
+        print(f"Ignorados {skipped} checkpoint(s) incompativeis/invalidos antes do campeonato.")
+
     return competitors
 
 

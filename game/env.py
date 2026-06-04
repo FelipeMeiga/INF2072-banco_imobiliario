@@ -131,9 +131,17 @@ class BancoImobiliarioEnv:
     def current_player(self) -> Player:
         return self.players[self.current_player_index]
 
+    def _state_acting_player_index(self) -> int:
+        if self.pending_trade is not None:
+            return int(self.pending_trade["to"])
+        if self.auction is not None:
+            return int(self.auction["current_bidder"])
+        return self.current_player_index
+
     def get_state(self) -> Dict[str, Any]:
         return {
-            "current_player": self.current_player_index,
+            "current_player": self._state_acting_player_index(),
+            "turn_player": self.current_player_index,
             "phase": self.phase,
             "dice": self.dice,
             "last_roll_total": self.last_roll_total,
@@ -279,7 +287,10 @@ class BancoImobiliarioEnv:
         self._push_undo_snapshot()
         self.last_action = action
         acting_player_index = self._get_acting_player_for_action(action)
-        before_net_worth = self._reward_net_worth(acting_player_index)
+        before_net_worth_by_player = [
+            self._reward_net_worth(i)
+            for i in range(self.num_players)
+        ]
         before_completed_groups = self._completed_group_count(acting_player_index)
         before_total_houses = self._total_houses(acting_player_index)
         purchase_before_action = self._current_purchase_property_index()
@@ -339,30 +350,42 @@ class BancoImobiliarioEnv:
 
         self._check_game_end()
 
-        after_net_worth = self._reward_net_worth(acting_player_index)
+        after_net_worth_by_player = [
+            self._reward_net_worth(i)
+            for i in range(self.num_players)
+        ]
         after_completed_groups = self._completed_group_count(acting_player_index)
         after_total_houses = self._total_houses(acting_player_index)
-        reward = (after_net_worth - before_net_worth) / 100.0
-        reward += self._strategic_reward(
+        rewards_by_player = [
+            (after - before) / 100.0
+            for before, after in zip(before_net_worth_by_player, after_net_worth_by_player)
+        ]
+        action_reward = self._strategic_reward(
             action_type,
             before_completed_groups,
             after_completed_groups,
             before_total_houses,
             after_total_houses,
         )
-        reward += self._purchase_auction_strategy_reward(
+        action_reward += self._purchase_auction_strategy_reward(
             action_type,
             acting_player_index,
             action,
             purchase_before_action,
             auction_before_action,
         )
+        rewards_by_player[acting_player_index] += action_reward
 
         if self.done and self.winner is not None:
-            reward += 100.0 if self.winner == acting_player_index else -100.0
+            for player_index in range(self.num_players):
+                rewards_by_player[player_index] += 100.0 if self.winner == player_index else -100.0
 
+        reward = rewards_by_player[acting_player_index]
         self._register_event(acting_player_index, action, reward)
-        return self.get_state(), reward, self.done, {"message": self.last_message}
+        return self.get_state(), reward, self.done, {
+            "message": self.last_message,
+            "rewards_by_player": rewards_by_player,
+        }
 
     # ========================================================
     # Undo / replay support
@@ -1073,7 +1096,7 @@ class BancoImobiliarioEnv:
         if not self.trade_draft or self.trade_draft["from"] != player_index:
             return []
 
-        actions: List[Dict[str, Any]] = [{"type": CANCEL_TRADE}]
+        actions: List[Dict[str, Any]] = []
         stage = self.trade_draft.get("stage", "target")
         target_index = self.trade_draft.get("to")
 
@@ -1083,10 +1106,10 @@ class BancoImobiliarioEnv:
                     continue
                 if self.get_tradeable_properties(candidate_index) or candidate.money > 0:
                     actions.append({"type": SELECT_TRADE_TARGET, "target_player": candidate_index})
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if target_index is None or not (0 <= target_index < self.num_players) or self.players[target_index].bankrupt:
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if stage == "offer_properties":
             selected = set(self.trade_draft["offer_properties"])
@@ -1095,7 +1118,7 @@ class BancoImobiliarioEnv:
                     if prop_index not in selected:
                         actions.append({"type": ADD_TRADE_OFFER_PROPERTY, "property_index": prop_index})
             actions.append({"type": FINISH_TRADE_OFFER})
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if stage == "offer_money":
             for amount in self._trade_money_options(self.players[player_index].money):
@@ -1104,7 +1127,7 @@ class BancoImobiliarioEnv:
                     "amount": amount,
                     "offer_money": amount,
                 })
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if stage == "request_properties":
             selected = set(self.trade_draft["request_properties"])
@@ -1113,7 +1136,7 @@ class BancoImobiliarioEnv:
                     if prop_index not in selected:
                         actions.append({"type": ADD_TRADE_REQUEST_PROPERTY, "property_index": prop_index})
             actions.append({"type": FINISH_TRADE_REQUEST})
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if stage == "request_money":
             for amount in self._trade_money_options(self.players[target_index].money):
@@ -1122,14 +1145,17 @@ class BancoImobiliarioEnv:
                     "amount": amount,
                     "request_money": amount,
                 })
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
         if stage == "confirm":
             if self._trade_draft_is_legal():
                 actions.append(self._draft_action_payload(SUBMIT_TRADE))
-            return actions
+            return self._with_cancel_trade_fallback(actions)
 
-        return actions
+        return self._with_cancel_trade_fallback(actions)
+
+    def _with_cancel_trade_fallback(self, actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        return actions if actions else [{"type": CANCEL_TRADE}]
 
     def _trade_money_options(self, max_amount: int) -> List[int]:
         max_amount = max(0, int(max_amount))
@@ -2006,7 +2032,8 @@ class BancoImobiliarioEnv:
     ) -> bool:
         proposer_gives = bool(offer_properties) or offer_money > 0
         target_gives = bool(request_properties) or request_money > 0
-        return proposer_gives and target_gives
+        property_involved = bool(offer_properties) or bool(request_properties)
+        return proposer_gives and target_gives and property_involved
 
     def _estimate_trade_score_deltas(
         self,

@@ -30,7 +30,7 @@ from game.actions import (
     UNMORTGAGE_PROPERTY,
     USE_JAIL_CARD,
 )
-from game.board import NUM_SPACES
+from game.board import GROUPS, NUM_SPACES
 
 TRADE_FEATURE_SIZE = 12
 TRADE_STAGES = [
@@ -44,6 +44,7 @@ TRADE_STAGES = [
     "response",
 ]
 TRADE_CONTEXT_SIZE = 4 + 4 + len(TRADE_STAGES) + NUM_SPACES + NUM_SPACES + 2
+TRADE_COMPLEMENTARITY_SIZE = 4 * 3
 ENCODER_RICH = "rich"
 ENCODER_RAW = "raw"
 DEFAULT_ENCODER = ENCODER_RICH
@@ -101,6 +102,7 @@ RICH_STATE_SIZE = (
     + NUM_SPACES
     + NUM_SPACES
     + TRADE_CONTEXT_SIZE
+    + TRADE_COMPLEMENTARITY_SIZE
     + 1
     + 1
     + 1
@@ -119,6 +121,7 @@ RAW_STATE_SIZE = (
     + 1
     + 4
     + TRADE_CONTEXT_SIZE
+    + TRADE_COMPLEMENTARITY_SIZE
     + 4
 )
 RAW_ACTION_SIZE = len(ACTION_TYPES) + 4 + NUM_SPACES + NUM_SPACES + NUM_SPACES + 3
@@ -198,6 +201,74 @@ def _trade_context_features(state: Dict[str, Any]) -> List[float]:
 
     values.append(float(trade.get("offer_money", 0)) / 1500.0)
     values.append(float(trade.get("request_money", 0)) / 1500.0)
+    return values
+
+
+def _trade_complementarity_features(state: Dict[str, Any]) -> List[float]:
+    current_player = _int_or_default(state.get("current_player", 0), 0)
+    owners = list(state.get("property_owners", []))[:NUM_SPACES]
+    while len(owners) < NUM_SPACES:
+        owners.append(-2)
+
+    houses = list(state.get("property_houses", []))[:NUM_SPACES]
+    while len(houses) < NUM_SPACES:
+        houses.append(0)
+
+    bankrupt = list(state.get("player_bankrupt", []))[:4]
+    while len(bankrupt) < 4:
+        bankrupt.append(True)
+
+    def owner_at(prop_index: int) -> int:
+        return _int_or_default(owners[prop_index], -2)
+
+    def group_has_buildings(properties: List[int]) -> bool:
+        return any(_int_or_default(houses[prop_index], 0) > 0 for prop_index in properties)
+
+    values: List[float] = []
+    group_count = max(1, len(GROUPS))
+    for target_player in range(4):
+        current_can_complete = 0
+        target_can_complete = 0
+
+        if (
+            target_player != current_player
+            and 0 <= current_player < 4
+            and not bankrupt[current_player]
+            and not bankrupt[target_player]
+        ):
+            for properties in GROUPS.values():
+                if group_has_buildings(properties):
+                    continue
+
+                current_owned = sum(
+                    1
+                    for prop_index in properties
+                    if owner_at(prop_index) == current_player
+                )
+                target_owned = sum(
+                    1
+                    for prop_index in properties
+                    if owner_at(prop_index) == target_player
+                )
+                group_size = len(properties)
+
+                if current_owned == group_size - 1 and any(
+                    owner_at(prop_index) == target_player
+                    for prop_index in properties
+                ):
+                    current_can_complete += 1
+
+                if target_owned == group_size - 1 and any(
+                    owner_at(prop_index) == current_player
+                    for prop_index in properties
+                ):
+                    target_can_complete += 1
+
+        mutual_completions = min(current_can_complete, target_can_complete)
+        values.append(float(current_can_complete) / float(group_count))
+        values.append(float(target_can_complete) / float(group_count))
+        values.append(float(mutual_completions) / float(group_count))
+
     return values
 
 
@@ -350,6 +421,7 @@ def encode_state_rich(state: Dict[str, Any], num_players: int = 4) -> np.ndarray
     values.extend([1.0 if m else 0.0 for m in mortgaged])
 
     values.extend(_trade_context_features(state))
+    values.extend(_trade_complementarity_features(state))
 
     values.append(float(state.get("turn_count", 0)) / 2000.0)
     values.append(float(state.get("bank_houses", 32)) / 32.0)
@@ -449,6 +521,7 @@ def encode_state_raw(state: Dict[str, Any], num_players: int = 4) -> np.ndarray:
         values.extend(_one_hot(-1, 4))
 
     values.extend(_trade_context_features(state))
+    values.extend(_trade_complementarity_features(state))
 
     values.append(float(state.get("turn_count", 0)) / 2000.0)
     values.append(float(state.get("action_count", 0)) / 20_000.0)
