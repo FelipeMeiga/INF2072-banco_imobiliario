@@ -1,3 +1,5 @@
+import os
+
 import pygame
 
 from game.board import NUM_SPACES
@@ -38,6 +40,10 @@ class PygameView:
         self.font = pygame.font.SysFont("arial", 26, bold=True)
         self.small_font = pygame.font.SysFont("arial", 20)
         self.tiny_font = pygame.font.SysFont("arial", 14)
+        self.timeline_rect = pygame.Rect(70, HEIGHT - 34, WIDTH - 140, 8)
+        self.timeline_hit_rect = self.timeline_rect.inflate(24, 28)
+        self.timeline_total = 0
+        self.dragging_timeline = False
 
     def handle_events(self) -> dict:
         commands = {
@@ -48,6 +54,9 @@ class PygameView:
             "speed_down": False,
             "reset": False,
             "undo": False,
+            "save_replay": False,
+            "load_latest": False,
+            "seek_index": None,
         }
 
         for event in pygame.event.get():
@@ -69,14 +78,55 @@ class PygameView:
                     commands["reset"] = True
                 elif event.key in (pygame.K_u, pygame.K_BACKSPACE):
                     commands["undo"] = True
+                elif event.key == pygame.K_s:
+                    commands["save_replay"] = True
+                elif event.key == pygame.K_l:
+                    commands["load_latest"] = True
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.timeline_total > 0 and self.timeline_hit_rect.collidepoint(event.pos):
+                    self.dragging_timeline = True
+                    commands["seek_index"] = self._timeline_index_from_x(event.pos[0])
+
+            if event.type == pygame.MOUSEMOTION:
+                if self.dragging_timeline and self.timeline_total > 0:
+                    commands["seek_index"] = self._timeline_index_from_x(event.pos[0])
+
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if self.dragging_timeline and self.timeline_total > 0:
+                    commands["seek_index"] = self._timeline_index_from_x(event.pos[0])
+                self.dragging_timeline = False
 
         return commands
 
-    def draw(self, env, paused=False, step_delay=None):
+    def _timeline_index_from_x(self, x):
+        if self.timeline_total <= 0 or self.timeline_rect.width <= 0:
+            return 0
+        ratio = (x - self.timeline_rect.x) / float(self.timeline_rect.width)
+        ratio = max(0.0, min(1.0, ratio))
+        return int(round(ratio * self.timeline_total))
+
+    def draw(
+        self,
+        env,
+        paused=False,
+        step_delay=None,
+        replay_cursor=0,
+        replay_total=0,
+        replay_path=None,
+        replay_locked=False,
+    ):
+        self.timeline_total = max(0, int(replay_total))
         self.screen.fill((35, 120, 70))
         self._draw_board(env)
         self._draw_center_trade(env)
         self._draw_side_panel(env, paused=paused, step_delay=step_delay)
+        self._draw_timeline(
+            replay_cursor=replay_cursor,
+            replay_total=replay_total,
+            replay_path=replay_path,
+            replay_locked=replay_locked,
+        )
         pygame.display.flip()
         self.clock.tick(FPS)
 
@@ -347,7 +397,7 @@ class PygameView:
             DARK_GRAY,
         )
         controls = self.tiny_font.render(
-            "SPACE pausa | N/-> avanca | U volta | +/- velocidade | R reinicia",
+            "SPACE pausa | N/-> avanca | U volta | S salva | L replay | +/- vel | R reinicia",
             True,
             DARK_GRAY,
         )
@@ -477,6 +527,44 @@ class PygameView:
             y += 18
 
         return y
+
+    def _draw_timeline(self, replay_cursor, replay_total, replay_path, replay_locked):
+        cursor = max(0, min(int(replay_cursor), int(replay_total)))
+        total = max(0, int(replay_total))
+
+        panel = pygame.Rect(40, HEIGHT - 54, WIDTH - 80, 42)
+        pygame.draw.rect(self.screen, WHITE, panel, border_radius=8)
+        pygame.draw.rect(self.screen, BLACK, panel, 1, border_radius=8)
+
+        title = "Replay carregado" if replay_locked else "Gravando replay"
+        if replay_path:
+            title = f"{title}: {os.path.basename(str(replay_path))}"
+
+        left_text = self.tiny_font.render(title, True, BLACK)
+        self.screen.blit(left_text, (panel.x + 14, panel.y + 5))
+
+        right_text = self.tiny_font.render(f"acao {cursor}/{total}", True, DARK_GRAY)
+        right_rect = right_text.get_rect(topright=(panel.right - 14, panel.y + 5))
+        self.screen.blit(right_text, right_rect)
+
+        pygame.draw.rect(self.screen, LIGHT_GRAY, self.timeline_rect, border_radius=4)
+
+        if total > 0:
+            progress = cursor / float(total)
+            filled = pygame.Rect(
+                self.timeline_rect.x,
+                self.timeline_rect.y,
+                int(self.timeline_rect.width * progress),
+                self.timeline_rect.height,
+            )
+            pygame.draw.rect(self.screen, GREEN, filled, border_radius=4)
+            knob_x = self.timeline_rect.x + int(self.timeline_rect.width * progress)
+        else:
+            knob_x = self.timeline_rect.x
+
+        knob_color = RED if replay_locked else GREEN
+        pygame.draw.circle(self.screen, knob_color, (knob_x, self.timeline_rect.centery), 9)
+        pygame.draw.circle(self.screen, BLACK, (knob_x, self.timeline_rect.centery), 9, 2)
 
 
 def get_space_rect(index):

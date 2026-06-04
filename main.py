@@ -1,8 +1,10 @@
 import copy
+import json
 import os
 import random
 import time
-from typing import Any, Dict, List
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
@@ -35,6 +37,11 @@ NEAT_MODEL_PATH = "models/best_neat_raw_agent.pkl"
 PPO_RAW_MODEL_PATH = "models/best_ppo_raw_agent.pt"
 PPO_MODEL_PATH = "models/best_ppo_agent.pt"
 DQN_MODEL_PATH = "models/best_dqn_agent.pt"
+REPLAY_DIR = "replays"
+LATEST_REPLAY_PATH = os.path.join(REPLAY_DIR, "latest_replay.json")
+REPLAY_PATH_ENV = "BANCO_REPLAY_PATH"
+REPLAY_SAVE_PATH_ENV = "BANCO_REPLAY_SAVE_PATH"
+REPLAY_SAVE_INTERVAL_ACTIONS = 25
 
 
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
@@ -146,12 +153,14 @@ def load_agents(model_path: str, game_seed: int):
     return agents, "DQN"
 
 
-def make_env_and_agents():
-    game_seed = make_game_seed()
+def make_env_and_agents(game_seed: Optional[int] = None):
+    if game_seed is None:
+        game_seed = make_game_seed()
     print(f"Seed da partida: {game_seed}")
     env = BancoImobiliarioEnv(num_players=4, seed=game_seed, enable_undo=True)
 
     model_path = resolve_model_path()
+    algorithm = "untrained"
     if model_path is not None and os.path.exists(model_path):
         try:
             agents, algorithm = load_agents(model_path, game_seed)
@@ -167,7 +176,114 @@ def make_env_and_agents():
         print("Para treinar: py train_ppo.py --episodes 300")
         agents = make_untrained_agents()
 
-    return env, agents
+    metadata = {
+        "seed": game_seed,
+        "model_path": model_path,
+        "algorithm": algorithm,
+    }
+    return env, agents, metadata
+
+
+def make_replay_save_path(seed: int) -> str:
+    explicit_path = os.environ.get(REPLAY_SAVE_PATH_ENV)
+    if explicit_path:
+        return explicit_path
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return os.path.join(REPLAY_DIR, f"replay_{timestamp}_seed_{seed}.json")
+
+
+def make_replay_payload(
+    seed: int,
+    metadata: Dict[str, Any],
+    replay_actions: List[Dict[str, Any]],
+    replay_cursor: int,
+    completed: bool,
+) -> Dict[str, Any]:
+    return {
+        "version": 1,
+        "created_by": "main.py",
+        "saved_at": datetime.now().isoformat(timespec="seconds"),
+        "seed": seed,
+        "model_path": metadata.get("model_path"),
+        "algorithm": metadata.get("algorithm"),
+        "actions": replay_actions,
+        "cursor": replay_cursor,
+        "completed": completed,
+    }
+
+
+def write_json_atomic(path: str, payload: Dict[str, Any]):
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
+    temp_path = f"{path}.tmp"
+    with open(temp_path, "w", encoding="utf-8") as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
+    os.replace(temp_path, path)
+
+
+def save_replay_file(
+    path: str,
+    seed: int,
+    metadata: Dict[str, Any],
+    replay_actions: List[Dict[str, Any]],
+    replay_cursor: int,
+    completed: bool,
+    update_latest: bool = True,
+):
+    payload = make_replay_payload(seed, metadata, replay_actions, replay_cursor, completed)
+    write_json_atomic(path, payload)
+    if update_latest and os.path.normcase(os.path.abspath(path)) != os.path.normcase(os.path.abspath(LATEST_REPLAY_PATH)):
+        write_json_atomic(LATEST_REPLAY_PATH, payload)
+
+
+def load_replay_file(path: str) -> Tuple[int, List[Dict[str, Any]], Dict[str, Any]]:
+    with open(path, "r", encoding="utf-8") as file:
+        payload = json.load(file)
+
+    seed = int(payload["seed"])
+    actions = list(payload.get("actions", []))
+    metadata = {
+        "seed": seed,
+        "model_path": payload.get("model_path"),
+        "algorithm": f"replay/{payload.get('algorithm', 'unknown')}",
+        "source_path": path,
+    }
+    return seed, actions, metadata
+
+
+def capture_replay_snapshot(env: BancoImobiliarioEnv) -> Dict[str, Any]:
+    return env._capture_snapshot()
+
+
+def restore_replay_snapshot(env: BancoImobiliarioEnv, snapshot: Dict[str, Any]):
+    env._restore_snapshot(snapshot)
+    env.undo_history = []
+
+
+def build_replay_snapshots(seed: int, replay_actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    replay_env = BancoImobiliarioEnv(num_players=4, seed=seed, enable_undo=False)
+    snapshots = [capture_replay_snapshot(replay_env)]
+    for action in replay_actions:
+        if replay_env.done:
+            break
+        replay_env.step(copy.deepcopy(action))
+        snapshots.append(capture_replay_snapshot(replay_env))
+    return snapshots
+
+
+def seek_replay(
+    env: BancoImobiliarioEnv,
+    replay_snapshots: List[Dict[str, Any]],
+    replay_cursor: int,
+) -> int:
+    if not replay_snapshots:
+        return 0
+    replay_cursor = max(0, min(replay_cursor, len(replay_snapshots) - 1))
+    restore_replay_snapshot(env, replay_snapshots[replay_cursor])
+    return replay_cursor
 
 
 def run_one_ai_action(
@@ -175,32 +291,60 @@ def run_one_ai_action(
     agents: List[Any],
     replay_actions: List[Dict[str, Any]],
     replay_cursor: int,
-) -> int:
+    replay_snapshots: List[Dict[str, Any]],
+    replay_locked: bool,
+) -> Tuple[int, bool]:
+    if replay_cursor < len(replay_snapshots) - 1:
+        restore_replay_snapshot(env, replay_snapshots[replay_cursor + 1])
+        return replay_cursor + 1, False
+
     if env.done:
-        return replay_cursor
+        return replay_cursor, False
 
     acting_player = get_acting_player(env)
     valid_actions = env.get_valid_actions(acting_player)
 
     if not valid_actions:
-        return replay_cursor
+        return replay_cursor, False
 
     if replay_cursor < len(replay_actions):
         action = replay_actions[replay_cursor]
     else:
+        if replay_locked:
+            return replay_cursor, False
         state = env.get_state()
         action = agents[acting_player].choose_action(state, valid_actions)
         replay_actions.append(copy.deepcopy(action))
+        replay_snapshots[:] = replay_snapshots[: replay_cursor + 1]
 
     env.step(copy.deepcopy(action))
-    return replay_cursor + 1
+    replay_snapshots.append(capture_replay_snapshot(env))
+    return replay_cursor + 1, replay_cursor >= len(replay_actions) - 1
 
 
 def main():
-    env, agents = make_env_and_agents()
-    replay_actions: List[Dict[str, Any]] = []
-    replay_cursor = 0
+    replay_load_path = os.environ.get(REPLAY_PATH_ENV)
+    replay_locked = False
+
+    if replay_load_path:
+        replay_seed, replay_actions, replay_metadata = load_replay_file(replay_load_path)
+        env, agents, metadata = make_env_and_agents(replay_seed)
+        metadata.update(replay_metadata)
+        replay_snapshots = build_replay_snapshots(replay_seed, replay_actions)
+        replay_cursor = seek_replay(env, replay_snapshots, 0)
+        replay_save_path = replay_load_path
+        replay_locked = True
+        print(f"Replay carregado: {replay_load_path} ({len(replay_actions)} acoes)")
+    else:
+        env, agents, metadata = make_env_and_agents()
+        replay_actions: List[Dict[str, Any]] = []
+        replay_snapshots = [capture_replay_snapshot(env)]
+        replay_cursor = 0
+        replay_save_path = make_replay_save_path(int(metadata["seed"]))
+        print(f"Gravando replay em: {replay_save_path}")
+
     view = PygameView()
+    last_saved_action_count = 0
 
     running = True
     paused = START_PAUSED
@@ -208,6 +352,7 @@ def main():
     last_step_time = 0.0
 
     while running:
+        new_action = False
         commands = view.handle_events()
         running = commands["running"]
 
@@ -220,31 +365,118 @@ def main():
         if commands["speed_down"]:
             step_delay = min(MAX_STEP_DELAY_SECONDS, step_delay * 1.5)
 
+        if commands["save_replay"] and not replay_locked:
+            save_replay_file(
+                replay_save_path,
+                int(metadata["seed"]),
+                metadata,
+                replay_actions,
+                replay_cursor,
+                env.done,
+            )
+            last_saved_action_count = len(replay_actions)
+            env.last_message = f"Replay salvo em {replay_save_path}."
+
+        if commands["load_latest"]:
+            if os.path.exists(LATEST_REPLAY_PATH):
+                replay_seed, replay_actions, replay_metadata = load_replay_file(LATEST_REPLAY_PATH)
+                env, agents, metadata = make_env_and_agents(replay_seed)
+                metadata.update(replay_metadata)
+                replay_snapshots = build_replay_snapshots(replay_seed, replay_actions)
+                replay_cursor = seek_replay(env, replay_snapshots, 0)
+                replay_save_path = LATEST_REPLAY_PATH
+                replay_locked = True
+                paused = True
+                last_step_time = 0.0
+                print(f"Replay carregado: {LATEST_REPLAY_PATH} ({len(replay_actions)} acoes)")
+            else:
+                env.last_message = "Nenhum replay salvo encontrado em replays/latest_replay.json."
+
         if commands["reset"]:
-            env, agents = make_env_and_agents()
+            env, agents, metadata = make_env_and_agents()
             replay_actions = []
+            replay_snapshots = [capture_replay_snapshot(env)]
             replay_cursor = 0
+            replay_save_path = make_replay_save_path(int(metadata["seed"]))
+            replay_locked = False
+            last_saved_action_count = 0
             paused = START_PAUSED
             last_step_time = 0.0
+            print(f"Gravando replay em: {replay_save_path}")
+
+        if commands["seek_index"] is not None:
+            replay_cursor = seek_replay(env, replay_snapshots, int(commands["seek_index"]))
+            paused = True
+            last_step_time = time.time()
 
         if commands["undo"]:
-            if env.undo_last_action():
-                replay_cursor = max(0, replay_cursor - 1)
-                paused = True
+            replay_cursor = seek_replay(env, replay_snapshots, replay_cursor - 1)
+            paused = True
             last_step_time = time.time()
 
         if commands["step_once"]:
-            replay_cursor = run_one_ai_action(env, agents, replay_actions, replay_cursor)
+            replay_cursor, generated_action = run_one_ai_action(
+                env,
+                agents,
+                replay_actions,
+                replay_cursor,
+                replay_snapshots,
+                replay_locked,
+            )
+            new_action = new_action or generated_action
             last_step_time = time.time()
 
         now = time.time()
 
         if not paused and not env.done and now - last_step_time >= step_delay:
-            replay_cursor = run_one_ai_action(env, agents, replay_actions, replay_cursor)
+            replay_cursor, generated_action = run_one_ai_action(
+                env,
+                agents,
+                replay_actions,
+                replay_cursor,
+                replay_snapshots,
+                replay_locked,
+            )
+            new_action = new_action or generated_action
             last_step_time = now
 
-        view.draw(env, paused=paused, step_delay=step_delay)
+        if (
+            not replay_locked
+            and (new_action or env.done)
+            and (
+                len(replay_actions) - last_saved_action_count >= REPLAY_SAVE_INTERVAL_ACTIONS
+                or env.done
+            )
+        ):
+            save_replay_file(
+                replay_save_path,
+                int(metadata["seed"]),
+                metadata,
+                replay_actions,
+                replay_cursor,
+                env.done,
+            )
+            last_saved_action_count = len(replay_actions)
 
+        view.draw(
+            env,
+            paused=paused,
+            step_delay=step_delay,
+            replay_cursor=replay_cursor,
+            replay_total=len(replay_actions),
+            replay_path=replay_save_path,
+            replay_locked=replay_locked,
+        )
+
+    if not replay_locked and replay_actions:
+        save_replay_file(
+            replay_save_path,
+            int(metadata["seed"]),
+            metadata,
+            replay_actions,
+            replay_cursor,
+            env.done,
+        )
     view.quit()
 
 

@@ -559,6 +559,55 @@ Antes de cada `env.step(action)`, o ambiente salva um snapshot completo:
 Com isso, a tecla `U` ou `Backspace` volta uma jogada real, nao apenas o texto
 do historico.
 
+## Replays salvos
+
+A visualizacao salva partidas em arquivos JSON dentro de `replays/`.
+
+Ao iniciar uma partida normal com `py main.py`, o programa cria um arquivo como:
+
+```text
+replays/replay_YYYYMMDD_HHMMSS_seed_123.json
+```
+
+O mesmo conteudo tambem e atualizado em:
+
+```text
+replays/latest_replay.json
+```
+
+O replay salva:
+
+- seed da partida;
+- caminho/modelo usado;
+- lista exata de acoes executadas;
+- cursor atual;
+- se a partida terminou.
+
+Como as acoes ficam gravadas, o replay nao depende de a IA escolher as mesmas
+acoes novamente. Ao reassistir, a partida segue exatamente o arquivo salvo.
+
+Controles de replay na visualizacao:
+
+- `S`: salva imediatamente a partida atual;
+- `L`: carrega `replays/latest_replay.json`;
+- slider inferior: volta ou avanca para qualquer acao gravada;
+- `U` ou `Backspace`: volta uma acao usando a timeline.
+
+Para abrir um replay especifico:
+
+```powershell
+$env:BANCO_REPLAY_PATH = "replays\latest_replay.json"
+py main.py
+```
+
+Em modo replay carregado, a visualizacao nao gera novas acoes alem do arquivo.
+Para voltar a jogar/gravar partidas novas:
+
+```powershell
+Remove-Item Env:BANCO_REPLAY_PATH
+py main.py
+```
+
 ## Visualizacao
 
 A interface fica em `ui/pygame_view.py`.
@@ -570,6 +619,8 @@ Controles:
 - `+`: aumenta a velocidade;
 - `-`: diminui a velocidade;
 - `U` ou `Backspace`: volta uma jogada;
+- `S`: salva o replay atual;
+- `L`: carrega o ultimo replay salvo;
 - `R`: reinicia;
 - `ESC`: fecha.
 
