@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_by": "main.py",
-  "saved_at": "2026-06-04T23:56:31",
+  "saved_at": "2026-06-04T23:56:32",
   "seed": 559932381,
   "model_path": "models/best_neat_raw_agent.pkl",
   "algorithm": "untrained",
@@ -4895,8 +4895,136 @@
     {
       "type": "select_trade_target",
       "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 32
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 750,
+      "offer_money": 750
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        32,
+        14,
+        23
+      ],
+      "offer_money": 750,
+      "request_properties": [
+        12,
+        11
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        32,
+        14,
+        23
+      ],
+      "offer_money": 750,
+      "request_properties": [
+        12,
+        11
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -1.22,
+        "target_delta": 1.27625,
+        "delta_diff": -2.49625,
+        "offer_value": 0.736,
+        "request_value": 0.339,
+        "offer_money": 0.5,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 75
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 18
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pay_jail_fine"
+    },
+    {
+      "type": "start_trade"
     }
   ],
-  "cursor": 850,
+  "cursor": 875,
   "completed": false
 }

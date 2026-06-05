@@ -213,15 +213,26 @@ def make_replay_payload(
     }
 
 
-def write_json_atomic(path: str, payload: Dict[str, Any]):
+def write_json_atomic(path: str, payload: Dict[str, Any], required: bool = True) -> bool:
     directory = os.path.dirname(path)
     if directory:
         os.makedirs(directory, exist_ok=True)
 
-    temp_path = f"{path}.tmp"
+    temp_path = f"{path}.{os.getpid()}.{time.time_ns()}.tmp"
     with open(temp_path, "w", encoding="utf-8") as file:
         json.dump(payload, file, ensure_ascii=False, indent=2)
-    os.replace(temp_path, path)
+    try:
+        os.replace(temp_path, path)
+        return True
+    except PermissionError as exc:
+        try:
+            os.remove(temp_path)
+        except OSError:
+            pass
+        if required:
+            raise
+        print(f"Nao foi possivel atualizar {path}: {exc}")
+        return False
 
 
 def save_replay_file(
@@ -236,7 +247,7 @@ def save_replay_file(
     payload = make_replay_payload(seed, metadata, replay_actions, replay_cursor, completed)
     write_json_atomic(path, payload)
     if update_latest and os.path.normcase(os.path.abspath(path)) != os.path.normcase(os.path.abspath(LATEST_REPLAY_PATH)):
-        write_json_atomic(LATEST_REPLAY_PATH, payload)
+        write_json_atomic(LATEST_REPLAY_PATH, payload, required=False)
 
 
 def load_replay_file(path: str) -> Tuple[int, List[Dict[str, Any]], Dict[str, Any]]:

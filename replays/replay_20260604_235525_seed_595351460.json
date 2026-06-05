@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "created_by": "main.py",
+  "saved_at": "2026-06-04T23:55:46",
+  "seed": 595351460,
+  "model_path": "models/best_neat_raw_agent.pkl",
+  "algorithm": "untrained",
+  "actions": [
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 1500,
+      "request_money": 1500
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 25
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 120
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 25
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_bid",
+      "amount": 120
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 150
+    },
+    {
+      "type": "auction_bid",
+      "amount": 160
+    },
+    {
+      "type": "auction_bid",
+      "amount": 210
+    },
+    {
+      "type": "auction_bid",
+      "amount": 235
+    },
+    {
+      "type": "auction_bid",
+      "amount": 260
+    },
+    {
+      "type": "auction_bid",
+      "amount": 310
+    },
+    {
+      "type": "auction_bid",
+      "amount": 400
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 1000,
+      "offer_money": 1000
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 1260,
+      "request_money": 1260
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    }
+  ],
+  "cursor": 75,
+  "completed": false
+}
