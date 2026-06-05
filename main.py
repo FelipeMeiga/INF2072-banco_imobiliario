@@ -29,6 +29,7 @@ STEP_DELAY_SECONDS = 0.25
 MIN_STEP_DELAY_SECONDS = 0.03
 MAX_STEP_DELAY_SECONDS = 2.0
 START_PAUSED = True
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 FIXED_SEED_ENV = "BANCO_SEED"
 MODEL_PATH_ENV = "BANCO_MODEL_PATH"
 ENCODER_ENV = "BANCO_ENCODER"
@@ -42,6 +43,17 @@ LATEST_REPLAY_PATH = os.path.join(REPLAY_DIR, "latest_replay.json")
 REPLAY_PATH_ENV = "BANCO_REPLAY_PATH"
 REPLAY_SAVE_PATH_ENV = "BANCO_REPLAY_SAVE_PATH"
 REPLAY_SAVE_INTERVAL_ACTIONS = 25
+
+
+def resolve_existing_path(path: str) -> str | None:
+    candidates = [path]
+    if not os.path.isabs(path):
+        candidates.append(os.path.join(PROJECT_ROOT, path))
+
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return None
 
 
 def get_acting_player(env: BancoImobiliarioEnv) -> int:
@@ -62,15 +74,21 @@ def make_game_seed() -> int:
 def resolve_model_path() -> str | None:
     explicit_path = os.environ.get(MODEL_PATH_ENV)
     if explicit_path:
-        return explicit_path
-    if os.path.exists(NEAT_MODEL_PATH):
-        return NEAT_MODEL_PATH
-    if os.path.exists(PPO_RAW_MODEL_PATH):
-        return PPO_RAW_MODEL_PATH
-    if os.path.exists(PPO_MODEL_PATH):
-        return PPO_MODEL_PATH
-    if os.path.exists(DQN_MODEL_PATH):
-        return DQN_MODEL_PATH
+        resolved = resolve_existing_path(explicit_path)
+        if resolved is not None:
+            return resolved
+        print(f"Modelo indicado em {MODEL_PATH_ENV} nao encontrado: {explicit_path}")
+        print("Tentando carregar o melhor modelo padrao disponivel.")
+
+    for candidate in (
+        PPO_RAW_MODEL_PATH,
+        PPO_MODEL_PATH,
+        NEAT_MODEL_PATH,
+        DQN_MODEL_PATH,
+    ):
+        resolved = resolve_existing_path(candidate)
+        if resolved is not None:
+            return resolved
     return None
 
 

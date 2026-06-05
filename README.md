@@ -168,8 +168,9 @@ Adaptador para redes evoluidas por NEAT no ambiente principal.
 ### `agents.random_agent.RandomAgent`
 
 Baseline heuristico. Apesar do nome, nao e puramente aleatorio: tende a comprar,
-construir, participar de leiloes e aceitar algumas trocas. No campeonato aparece
-como `heuristic_baseline`. O campeonato tambem inclui `pure_random_baseline`.
+construir, participar de leiloes e montar/avaliar trocas por valor situacional.
+No campeonato aparece como `heuristic_baseline`. O campeonato tambem inclui
+`pure_random_baseline`.
 
 ### `ui.pygame_view.PygameView`
 
@@ -483,7 +484,11 @@ O campeonato usa dois baselines:
 
 - `pure_random_baseline`: escolhe acoes validas aleatoriamente.
 - `heuristic_baseline`: usa regras simples para comprar, construir, leiloar,
-  sair da cadeia e aceitar algumas trocas.
+  sair da cadeia e negociar. Nas trocas, procura propriedades que fecham grupos
+  para si, oferece propriedades que fecham grupos para o outro jogador, calcula
+  uma compensacao em dinheiro e aceita ou recusa pela diferenca de valor
+  situacional. Ferrovias e companhias tambem entram com peso menor quando
+  melhoram colecoes ja existentes.
 
 Esses baselines sao importantes porque loss/reward isolados nao dizem se o
 agente joga melhor.

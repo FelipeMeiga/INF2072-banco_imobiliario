@@ -1,0 +1,7694 @@
+{
+  "version": 1,
+  "created_by": "main.py",
+  "saved_at": "2026-06-05T10:35:29",
+  "seed": 2071290270,
+  "model_path": "models\\checkpoints\\ppo_raw_ep_002200.pt",
+  "algorithm": "untrained",
+  "actions": [
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 750,
+      "offer_money": 750
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 500,
+      "request_money": 500
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 10
+    },
+    {
+      "type": "auction_bid",
+      "amount": 110
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 10
+    },
+    {
+      "type": "auction_bid",
+      "amount": 60
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 70
+    },
+    {
+      "type": "auction_bid",
+      "amount": 95
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 100,
+      "request_properties": [],
+      "request_money": 25
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 100,
+      "request_properties": [],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": -0.725,
+        "target_delta": 0.5225,
+        "delta_diff": -1.2475,
+        "offer_value": 0.2,
+        "request_value": 0.0,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 25
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 150
+    },
+    {
+      "type": "auction_bid",
+      "amount": 175
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 150
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_bid",
+      "amount": 220
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 5
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 8
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11,
+        5,
+        8
+      ],
+      "offer_money": 200,
+      "request_properties": [],
+      "request_money": 50
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        11,
+        5,
+        8
+      ],
+      "offer_money": 200,
+      "request_properties": [],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": -0.9275,
+        "target_delta": 0.725,
+        "delta_diff": -1.6525,
+        "offer_value": 0.44,
+        "request_value": 0.0,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 750,
+      "request_money": 750
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15,
+        19
+      ],
+      "offer_money": 300,
+      "request_properties": [],
+      "request_money": 750
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        15,
+        19
+      ],
+      "offer_money": 300,
+      "request_properties": [],
+      "request_money": 750,
+      "trade_features": {
+        "proposer_delta": -0.4,
+        "target_delta": -0.05,
+        "delta_diff": -0.35,
+        "offer_value": 0.4,
+        "request_value": 0.0,
+        "offer_money": 0.2,
+        "request_money": 0.5,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 25
+    },
+    {
+      "type": "auction_bid",
+      "amount": 75
+    },
+    {
+      "type": "auction_bid",
+      "amount": 175
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_bid",
+      "amount": 220
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 230
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 8
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 750,
+      "offer_money": 750
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 200,
+      "request_money": 200
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [
+        11,
+        8,
+        3
+      ],
+      "offer_money": 750,
+      "request_properties": [],
+      "request_money": 200
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11,
+        8,
+        3
+      ],
+      "offer_money": 750,
+      "request_properties": [],
+      "request_money": 200,
+      "trade_features": {
+        "proposer_delta": -1.2775,
+        "target_delta": 1.03,
+        "delta_diff": -2.3075,
+        "offer_value": 0.321,
+        "request_value": 0.0,
+        "offer_money": 0.5,
+        "request_money": 0.13333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 60
+    },
+    {
+      "type": "auction_bid",
+      "amount": 110
+    },
+    {
+      "type": "auction_bid",
+      "amount": 135
+    },
+    {
+      "type": "auction_bid",
+      "amount": 145
+    },
+    {
+      "type": "auction_bid",
+      "amount": 195
+    },
+    {
+      "type": "auction_bid",
+      "amount": 205
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 230
+    },
+    {
+      "type": "auction_bid",
+      "amount": 280
+    },
+    {
+      "type": "auction_bid",
+      "amount": 380
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 400
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 8
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        8,
+        3,
+        39
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        8,
+        3,
+        39
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": 0.87,
+        "target_delta": -0.8475,
+        "delta_diff": 1.7175,
+        "offer_value": 0.396,
+        "request_value": 0.721,
+        "offer_money": 0.1,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 10
+    },
+    {
+      "type": "auction_bid",
+      "amount": 60
+    },
+    {
+      "type": "auction_bid",
+      "amount": 70
+    },
+    {
+      "type": "auction_bid",
+      "amount": 120
+    },
+    {
+      "type": "auction_bid",
+      "amount": 145
+    },
+    {
+      "type": "auction_bid",
+      "amount": 155
+    },
+    {
+      "type": "auction_bid",
+      "amount": 180
+    },
+    {
+      "type": "auction_bid",
+      "amount": 190
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_bid",
+      "amount": 210
+    },
+    {
+      "type": "auction_bid",
+      "amount": 240
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_bid",
+      "amount": 125
+    },
+    {
+      "type": "auction_bid",
+      "amount": 135
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 160
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        26
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        26
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": 0.49,
+        "target_delta": -0.31,
+        "delta_diff": 0.8,
+        "offer_value": 0.0,
+        "request_value": 0.351,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 491,
+      "request_money": 491
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        12
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        35,
+        26,
+        15
+      ],
+      "request_money": 491
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        12
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        35,
+        26,
+        15
+      ],
+      "request_money": 491,
+      "trade_features": {
+        "proposer_delta": 1.181,
+        "target_delta": -1.001,
+        "delta_diff": 2.182,
+        "offer_value": 0.15,
+        "request_value": 0.751,
+        "offer_money": 0.0,
+        "request_money": 0.3273333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 8
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 200,
+      "request_money": 200
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        3,
+        39,
+        8
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        27,
+        11,
+        24
+      ],
+      "request_money": 200
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        3,
+        39,
+        8
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        27,
+        11,
+        24
+      ],
+      "request_money": 200,
+      "trade_features": {
+        "proposer_delta": -0.5775,
+        "target_delta": 0.2175,
+        "delta_diff": -0.795,
+        "offer_value": 0.721,
+        "request_value": 0.965,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.13333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [
+        15,
+        26,
+        35
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        27
+      ],
+      "request_money": 150
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15,
+        26,
+        35
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        27
+      ],
+      "request_money": 150,
+      "trade_features": {
+        "proposer_delta": -0.4,
+        "target_delta": 0.4,
+        "delta_diff": -0.8,
+        "offer_value": 0.751,
+        "request_value": 0.52,
+        "offer_money": 0.1,
+        "request_money": 0.1,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "use_jail_card"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 75
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 125
+    },
+    {
+      "type": "auction_bid",
+      "amount": 135
+    },
+    {
+      "type": "auction_bid",
+      "amount": 235
+    },
+    {
+      "type": "auction_bid",
+      "amount": 245
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 1
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 31
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 16,
+      "request_money": 16
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        19,
+        1,
+        31
+      ],
+      "request_money": 16
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        19,
+        1,
+        31
+      ],
+      "request_money": 16,
+      "trade_features": {
+        "proposer_delta": 0.23975,
+        "target_delta": -0.44225,
+        "delta_diff": 0.682,
+        "offer_value": 0.26,
+        "request_value": 0.581,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.010666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 75
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_bid",
+      "amount": 200
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 210
+    },
+    {
+      "type": "auction_bid",
+      "amount": 300
+    },
+    {
+      "type": "auction_bid",
+      "amount": 350
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 6
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        24,
+        6
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        13,
+        39,
+        3
+      ],
+      "request_money": 150
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        24,
+        6
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        13,
+        39,
+        3
+      ],
+      "request_money": 150,
+      "trade_features": {
+        "proposer_delta": 1.3325,
+        "target_delta": -0.995,
+        "delta_diff": 2.3275,
+        "offer_value": 0.531,
+        "request_value": 0.81,
+        "offer_money": 0.0,
+        "request_money": 0.1,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 8
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 6
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        8,
+        6,
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        26,
+        12
+      ],
+      "request_money": 150
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        8,
+        6,
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        26,
+        12
+      ],
+      "request_money": 150,
+      "trade_features": {
+        "proposer_delta": -0.2775,
+        "target_delta": 0.2775,
+        "delta_diff": -0.555,
+        "offer_value": 0.596,
+        "request_value": 0.41,
+        "offer_money": 0.1,
+        "request_money": 0.1,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 500,
+      "request_money": 500
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [
+        1,
+        21
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        3,
+        11,
+        39
+      ],
+      "request_money": 500
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        1,
+        21
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        3,
+        11,
+        39
+      ],
+      "request_money": 500,
+      "trade_features": {
+        "proposer_delta": 0.94625,
+        "target_delta": -1.3625,
+        "delta_diff": 2.30875,
+        "offer_value": 0.34,
+        "request_value": 0.8,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.3333333333333333,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [],
+      "offer_money": 300,
+      "request_properties": [
+        12,
+        26
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [],
+      "offer_money": 300,
+      "request_properties": [
+        12,
+        26
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": 0.315,
+        "target_delta": -0.6525,
+        "delta_diff": 0.9675,
+        "offer_value": 0.0,
+        "request_value": 0.501,
+        "offer_money": 0.2,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 25
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_bid",
+      "amount": 110
+    },
+    {
+      "type": "auction_bid",
+      "amount": 120
+    },
+    {
+      "type": "auction_bid",
+      "amount": 145
+    },
+    {
+      "type": "auction_bid",
+      "amount": 155
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 32
+    },
+    {
+      "type": "build_house",
+      "property_index": 31
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [
+        25,
+        39,
+        19
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        13,
+        21,
+        26
+      ],
+      "request_money": 150
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        25,
+        39,
+        19
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        13,
+        21,
+        26
+      ],
+      "request_money": 150,
+      "trade_features": {
+        "proposer_delta": -0.055,
+        "target_delta": 0.5275,
+        "delta_diff": -0.5825,
+        "offer_value": 0.94,
+        "request_value": 0.837,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.1,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 257,
+      "request_money": 257
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [],
+      "offer_money": 150,
+      "request_properties": [
+        3,
+        39,
+        25
+      ],
+      "request_money": 257
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [],
+      "offer_money": 150,
+      "request_properties": [
+        3,
+        39,
+        25
+      ],
+      "request_money": 257,
+      "trade_features": {
+        "proposer_delta": 1.622,
+        "target_delta": -1.487,
+        "delta_diff": 3.109,
+        "offer_value": 0.0,
+        "request_value": 0.871,
+        "offer_money": 0.1,
+        "request_money": 0.17133333333333334,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 34
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 29
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        26,
+        13,
+        28
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        23,
+        15,
+        29
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        26,
+        13,
+        28
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        23,
+        15,
+        29
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": 0.3025,
+        "target_delta": 0.08,
+        "delta_diff": 0.2225,
+        "offer_value": 0.69,
+        "request_value": 1.057,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        25,
+        39,
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        19,
+        28,
+        13
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        25,
+        39,
+        24
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        19,
+        28,
+        13
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -1.12,
+        "target_delta": 0.76,
+        "delta_diff": -1.88,
+        "offer_value": 1.186,
+        "request_value": 0.49,
+        "offer_money": 0.1,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 200,
+      "request_money": 200
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        15
+      ],
+      "request_money": 200
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        15
+      ],
+      "request_money": 200,
+      "trade_features": {
+        "proposer_delta": 0.44,
+        "target_delta": -0.35,
+        "delta_diff": 0.79,
+        "offer_value": 0.0,
+        "request_value": 0.2,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.13333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        12,
+        23
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        15
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 0,
+      "offer_properties": [
+        12,
+        23
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        15
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -0.375,
+        "target_delta": 0.5775,
+        "delta_diff": -0.9525,
+        "offer_value": 0.37,
+        "request_value": 0.2,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        13
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        25,
+        39
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        13
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        25,
+        39
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 1.09,
+        "target_delta": -0.73,
+        "delta_diff": 1.82,
+        "offer_value": 0.189,
+        "request_value": 0.79,
+        "offer_money": 0.0,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "pass_buy"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 50
+    },
+    {
+      "type": "auction_bid",
+      "amount": 75
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 175
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        28,
+        19,
+        13
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        26,
+        11,
+        25
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        28,
+        19,
+        13
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        26,
+        11,
+        25
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.2425,
+        "target_delta": -0.175,
+        "delta_diff": 0.4175,
+        "offer_value": 0.539,
+        "request_value": 0.959,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 57,
+      "offer_money": 57
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        1,
+        27
+      ],
+      "offer_money": 57,
+      "request_properties": [
+        12,
+        23
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 0,
+      "offer_properties": [
+        1,
+        27
+      ],
+      "offer_money": 57,
+      "request_properties": [
+        12,
+        23
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -0.147,
+        "target_delta": 0.192,
+        "delta_diff": -0.339,
+        "offer_value": 0.341,
+        "request_value": 0.447,
+        "offer_money": 0.038,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 0
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 500,
+      "offer_money": 500
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 29
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 0,
+      "offer_properties": [
+        11
+      ],
+      "offer_money": 500,
+      "request_properties": [
+        29,
+        15,
+        27
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11
+      ],
+      "offer_money": 500,
+      "request_properties": [
+        29,
+        15,
+        27
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.4025,
+        "target_delta": -0.2475,
+        "delta_diff": 0.65,
+        "offer_value": 0.14,
+        "request_value": 1.029,
+        "offer_money": 0.3333333333333333,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "build_house",
+      "property_index": 9
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 32
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 61,
+      "offer_money": 61
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        13,
+        39
+      ],
+      "offer_money": 61,
+      "request_properties": [
+        12,
+        23
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        13,
+        39
+      ],
+      "offer_money": 61,
+      "request_properties": [
+        12,
+        23
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -0.491,
+        "target_delta": 0.8285,
+        "delta_diff": -1.3195,
+        "offer_value": 0.771,
+        "request_value": 0.499,
+        "offer_money": 0.04066666666666666,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 31
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 1
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 1
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 594,
+      "request_money": 594
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35,
+        1
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        23
+      ],
+      "request_money": 594
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        1
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        23
+      ],
+      "request_money": 594,
+      "trade_features": {
+        "proposer_delta": 0.729,
+        "target_delta": -0.709,
+        "delta_diff": 1.438,
+        "offer_value": 0.281,
+        "request_value": 0.44,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.396,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 34
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 117,
+      "request_money": 117
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        11,
+        14,
+        26
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        21,
+        35,
+        39
+      ],
+      "request_money": 117
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11,
+        14,
+        26
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        21,
+        35,
+        39
+      ],
+      "request_money": 117,
+      "trade_features": {
+        "proposer_delta": 0.5345,
+        "target_delta": 0.158,
+        "delta_diff": 0.3765,
+        "offer_value": 0.925,
+        "request_value": 1.06,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.078,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 544,
+      "request_money": 544
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "build_house",
+      "property_index": 31
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 15
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 32
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 21
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 184,
+      "request_money": 184
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        27,
+        19,
+        21
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        23,
+        12
+      ],
+      "request_money": 184
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        27,
+        19,
+        21
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        23,
+        12
+      ],
+      "request_money": 184,
+      "trade_features": {
+        "proposer_delta": -0.476,
+        "target_delta": 0.341,
+        "delta_diff": -0.817,
+        "offer_value": 0.757,
+        "request_value": 0.642,
+        "offer_money": 0.2,
+        "request_money": 0.12266666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        11,
+        3
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        24
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11,
+        3
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        24
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": -0.495,
+        "target_delta": 0.425,
+        "delta_diff": -0.92,
+        "offer_value": 0.309,
+        "request_value": 0.24,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 5
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 500,
+      "request_money": 500
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        24,
+        14,
+        5
+      ],
+      "request_money": 500
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        24,
+        14,
+        5
+      ],
+      "request_money": 500,
+      "trade_features": {
+        "proposer_delta": 1.07,
+        "target_delta": -0.89,
+        "delta_diff": 1.96,
+        "offer_value": 0.2,
+        "request_value": 0.788,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.3333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 27
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [],
+      "offer_money": 150,
+      "request_properties": [
+        28,
+        12,
+        23
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [],
+      "offer_money": 150,
+      "request_properties": [
+        28,
+        12,
+        23
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.46,
+        "target_delta": -0.46,
+        "delta_diff": 0.92,
+        "offer_value": 0.0,
+        "request_value": 0.663,
+        "offer_money": 0.1,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 5
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        5,
+        24,
+        21
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        5,
+        24,
+        21
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.615,
+        "target_delta": -0.615,
+        "delta_diff": 1.23,
+        "offer_value": 0.25,
+        "request_value": 0.76,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 5
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        26,
+        23,
+        28
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        21,
+        5
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        26,
+        23,
+        28
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        21,
+        5
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": 0.1475,
+        "target_delta": 0.01,
+        "delta_diff": 0.1375,
+        "offer_value": 0.941,
+        "request_value": 0.871,
+        "offer_money": 0.0,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 37
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        18,
+        27,
+        14
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        37,
+        15,
+        11
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        18,
+        27,
+        14
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        37,
+        15,
+        11
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.3675,
+        "target_delta": -0.14,
+        "delta_diff": 0.5075,
+        "offer_value": 0.851,
+        "request_value": 0.911,
+        "offer_money": 0.1,
+        "request_money": 0.0,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 24,
+      "request_money": 24
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        18
+      ],
+      "offer_money": 150,
+      "request_properties": [],
+      "request_money": 24
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        18
+      ],
+      "offer_money": 150,
+      "request_properties": [],
+      "request_money": 24,
+      "trade_features": {
+        "proposer_delta": -0.306,
+        "target_delta": 0.486,
+        "delta_diff": -0.792,
+        "offer_value": 0.243,
+        "request_value": 0.0,
+        "offer_money": 0.1,
+        "request_money": 0.016,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 300,
+      "request_properties": [],
+      "request_money": 100
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 300,
+      "request_properties": [],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -0.595,
+        "target_delta": 0.55,
+        "delta_diff": -1.145,
+        "offer_value": 0.429,
+        "request_value": 0.0,
+        "offer_money": 0.2,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 6
+    },
+    {
+      "type": "build_house",
+      "property_index": 8
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 78,
+      "request_money": 78
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15,
+        11,
+        21
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        13,
+        39
+      ],
+      "request_money": 78
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        15,
+        11,
+        21
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        13,
+        39
+      ],
+      "request_money": 78,
+      "trade_features": {
+        "proposer_delta": 0.183,
+        "target_delta": -0.298,
+        "delta_diff": 0.481,
+        "offer_value": 0.75,
+        "request_value": 0.989,
+        "offer_money": 0.2,
+        "request_money": 0.052,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 31
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        27,
+        15,
+        21
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        18,
+        23,
+        19
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        27,
+        15,
+        21
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        18,
+        23,
+        19
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": -0.08,
+        "target_delta": -0.055,
+        "delta_diff": -0.025,
+        "offer_value": 0.807,
+        "request_value": 0.677,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 82,
+      "request_money": 82
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        13,
+        24,
+        26
+      ],
+      "offer_money": 50,
+      "request_properties": [],
+      "request_money": 82
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        13,
+        24,
+        26
+      ],
+      "offer_money": 50,
+      "request_properties": [],
+      "request_money": 82,
+      "trade_features": {
+        "proposer_delta": -0.788,
+        "target_delta": 1.728,
+        "delta_diff": -2.516,
+        "offer_value": 1.124,
+        "request_value": 0.0,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.05466666666666667,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 14
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35,
+        15,
+        21
+      ],
+      "offer_money": 100,
+      "request_properties": [],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        15,
+        21
+      ],
+      "offer_money": 100,
+      "request_properties": [],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": -0.875,
+        "target_delta": 0.695,
+        "delta_diff": -1.57,
+        "offer_value": 0.72,
+        "request_value": 0.0,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 29
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        27,
+        24,
+        29
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [],
+      "offer_money": 50,
+      "request_properties": [
+        27,
+        24,
+        29
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.95,
+        "target_delta": -1.15,
+        "delta_diff": 2.1,
+        "offer_value": 0.0,
+        "request_value": 1.215,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 14,
+      "request_money": 14
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        21,
+        27,
+        24
+      ],
+      "request_money": 14
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        26
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        21,
+        27,
+        24
+      ],
+      "request_money": 14,
+      "trade_features": {
+        "proposer_delta": 0.629,
+        "target_delta": -0.629,
+        "delta_diff": 1.258,
+        "offer_value": 0.52,
+        "request_value": 0.811,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.009333333333333334,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "build_house",
+      "property_index": 13
+    },
+    {
+      "type": "build_house",
+      "property_index": 11
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 447,
+      "request_money": 447
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        27
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        25,
+        28,
+        23
+      ],
+      "request_money": 447
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        27
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        25,
+        28,
+        23
+      ],
+      "request_money": 447,
+      "trade_features": {
+        "proposer_delta": 1.137,
+        "target_delta": -0.712,
+        "delta_diff": 1.849,
+        "offer_value": 0.429,
+        "request_value": 0.79,
+        "offer_money": 0.0,
+        "request_money": 0.298,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "buy_property"
+    },
+    {
+      "type": "auction_bid",
+      "amount": 100
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "auction_pass"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        18,
+        28,
+        25
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        18,
+        28,
+        25
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -0.6475,
+        "target_delta": 0.29,
+        "delta_diff": -0.9375,
+        "offer_value": 0.647,
+        "request_value": 0.324,
+        "offer_money": 0.0,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 39
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 37
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        23,
+        16,
+        24
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        39,
+        37
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        23,
+        16,
+        24
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        39,
+        37
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": 0.63,
+        "target_delta": -0.765,
+        "delta_diff": 1.395,
+        "offer_value": 0.64,
+        "request_value": 1.012,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 29
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 257,
+      "request_money": 257
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        16,
+        26,
+        29
+      ],
+      "offer_money": 200,
+      "request_properties": [],
+      "request_money": 257
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        16,
+        26,
+        29
+      ],
+      "offer_money": 200,
+      "request_properties": [],
+      "request_money": 257,
+      "trade_features": {
+        "proposer_delta": -0.748,
+        "target_delta": 0.883,
+        "delta_diff": -1.631,
+        "offer_value": 0.783,
+        "request_value": 0.0,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.17133333333333334,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 57,
+      "offer_money": 57
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 500,
+      "request_money": 500
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        18,
+        28,
+        25
+      ],
+      "offer_money": 57,
+      "request_properties": [
+        12
+      ],
+      "request_money": 500
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        18,
+        28,
+        25
+      ],
+      "offer_money": 57,
+      "request_properties": [
+        12
+      ],
+      "request_money": 500,
+      "trade_features": {
+        "proposer_delta": 0.063,
+        "target_delta": 0.117,
+        "delta_diff": -0.054,
+        "offer_value": 0.645,
+        "request_value": 0.202,
+        "offer_money": 0.038,
+        "request_money": 0.3333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        16,
+        15
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        19
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        16,
+        15
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.11,
+        "target_delta": -0.29,
+        "delta_diff": 0.4,
+        "offer_value": 0.27,
+        "request_value": 0.683,
+        "offer_money": 0.0,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 150,
+      "request_money": 150
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        27,
+        25,
+        21
+      ],
+      "request_money": 150
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        27,
+        25,
+        21
+      ],
+      "request_money": 150,
+      "trade_features": {
+        "proposer_delta": 1.67,
+        "target_delta": -0.91,
+        "delta_diff": 2.58,
+        "offer_value": 0.25,
+        "request_value": 1.31,
+        "offer_money": 0.0,
+        "request_money": 0.1,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 14
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 47,
+      "offer_money": 47
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [],
+      "offer_money": 47,
+      "request_properties": [
+        21,
+        23,
+        24
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [],
+      "offer_money": 47,
+      "request_properties": [
+        21,
+        23,
+        24
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 1.053,
+        "target_delta": -1.053,
+        "delta_diff": 2.106,
+        "offer_value": 0.0,
+        "request_value": 1.122,
+        "offer_money": 0.03133333333333333,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 22,
+      "offer_money": 22
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 750,
+      "request_money": 750
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        28,
+        11,
+        15
+      ],
+      "offer_money": 22,
+      "request_properties": [],
+      "request_money": 750
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        28,
+        11,
+        15
+      ],
+      "offer_money": 22,
+      "request_properties": [],
+      "request_money": 750,
+      "trade_features": {
+        "proposer_delta": -0.132,
+        "target_delta": -0.248,
+        "delta_diff": 0.116,
+        "offer_value": 0.633,
+        "request_value": 0.0,
+        "offer_money": 0.014666666666666666,
+        "request_money": 0.5,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 287,
+      "offer_money": 287
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 19,
+      "request_money": 19
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        24,
+        35,
+        26
+      ],
+      "offer_money": 287,
+      "request_properties": [
+        28,
+        11,
+        15
+      ],
+      "request_money": 19
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        24,
+        35,
+        26
+      ],
+      "offer_money": 287,
+      "request_properties": [
+        28,
+        11,
+        15
+      ],
+      "request_money": 19,
+      "trade_features": {
+        "proposer_delta": -1.308,
+        "target_delta": 0.548,
+        "delta_diff": -1.856,
+        "offer_value": 1.075,
+        "request_value": 0.731,
+        "offer_money": 0.19133333333333333,
+        "request_money": 0.012666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 32
+    },
+    {
+      "type": "build_house",
+      "property_index": 34
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 18
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        25,
+        24
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        18
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35,
+        25,
+        24
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        18
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": -0.605,
+        "target_delta": 0.405,
+        "delta_diff": -1.01,
+        "offer_value": 0.796,
+        "request_value": 0.243,
+        "offer_money": 0.0,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 5
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        14,
+        18
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        5,
+        21,
+        25
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        14,
+        18
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        5,
+        21,
+        25
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": -0.01,
+        "target_delta": -0.37,
+        "delta_diff": 0.36,
+        "offer_value": 0.403,
+        "request_value": 0.763,
+        "offer_money": 0.1,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 7,
+      "offer_money": 7
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 16
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        11
+      ],
+      "offer_money": 7,
+      "request_properties": [
+        35,
+        27,
+        16
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11
+      ],
+      "offer_money": 7,
+      "request_properties": [
+        35,
+        27,
+        16
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.583,
+        "target_delta": -0.783,
+        "delta_diff": 1.366,
+        "offer_value": 0.231,
+        "request_value": 0.922,
+        "offer_money": 0.004666666666666667,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 29
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 16
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        23,
+        29,
+        16
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        11,
+        15
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        23,
+        29,
+        16
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        11,
+        15
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -1.1225,
+        "target_delta": 0.52,
+        "delta_diff": -1.6425,
+        "offer_value": 1.068,
+        "request_value": 0.581,
+        "offer_money": 0.1,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        18,
+        14
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        12,
+        28
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        18,
+        14
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        12,
+        28
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -0.41,
+        "target_delta": 0.61,
+        "delta_diff": -1.02,
+        "offer_value": 0.52,
+        "request_value": 0.3,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.0,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        14,
+        16,
+        19
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        13,
+        28,
+        12
+      ],
+      "request_money": 25
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        14,
+        16,
+        19
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        13,
+        28,
+        12
+      ],
+      "request_money": 25,
+      "trade_features": {
+        "proposer_delta": -0.595,
+        "target_delta": 0.215,
+        "delta_diff": -0.81,
+        "offer_value": 0.843,
+        "request_value": 0.489,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.016666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 5
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 200,
+      "offer_money": 200
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 16
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        24,
+        5
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        16
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35,
+        24,
+        5
+      ],
+      "offer_money": 200,
+      "request_properties": [
+        16
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": -0.66,
+        "target_delta": 0.3,
+        "delta_diff": -0.96,
+        "offer_value": 0.64,
+        "request_value": 0.18,
+        "offer_money": 0.13333333333333333,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 5
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 300,
+      "offer_money": 300
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35,
+        5,
+        19
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        26,
+        11
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        5,
+        19
+      ],
+      "offer_money": 300,
+      "request_properties": [
+        26,
+        11
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": -0.32,
+        "target_delta": 0.5,
+        "delta_diff": -0.82,
+        "offer_value": 0.87,
+        "request_value": 0.449,
+        "offer_money": 0.2,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 29
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 108,
+      "offer_money": 108
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 2,
+      "offer_properties": [
+        29,
+        12,
+        13
+      ],
+      "offer_money": 108,
+      "request_properties": [
+        19,
+        35,
+        27
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        29,
+        12,
+        13
+      ],
+      "offer_money": 108,
+      "request_properties": [
+        19,
+        35,
+        27
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -0.008,
+        "target_delta": 0.0305,
+        "delta_diff": -0.0385,
+        "offer_value": 0.759,
+        "request_value": 0.821,
+        "offer_money": 0.072,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "pay_jail_fine"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 26
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        27,
+        35,
+        15
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        11,
+        24,
+        26
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        27,
+        35,
+        15
+      ],
+      "offer_money": 50,
+      "request_properties": [
+        11,
+        24,
+        26
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": 0.12,
+        "target_delta": -0.12,
+        "delta_diff": 0.24,
+        "offer_value": 0.751,
+        "request_value": 0.815,
+        "offer_money": 0.03333333333333333,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 23
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 29
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 1,
+      "request_money": 1
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        28,
+        29,
+        12
+      ],
+      "offer_money": 25,
+      "request_properties": [],
+      "request_money": 1
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        28,
+        29,
+        12
+      ],
+      "offer_money": 25,
+      "request_properties": [],
+      "request_money": 1,
+      "trade_features": {
+        "proposer_delta": -0.464,
+        "target_delta": 0.644,
+        "delta_diff": -1.108,
+        "offer_value": 0.678,
+        "request_value": 0.0,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.0006666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 248,
+      "offer_money": 248
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 18
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 300,
+      "request_money": 300
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        35
+      ],
+      "offer_money": 248,
+      "request_properties": [
+        28,
+        18,
+        23
+      ],
+      "request_money": 300
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 2,
+      "offer_properties": [
+        35
+      ],
+      "offer_money": 248,
+      "request_properties": [
+        28,
+        18,
+        23
+      ],
+      "request_money": 300,
+      "trade_features": {
+        "proposer_delta": 1.052,
+        "target_delta": -0.492,
+        "delta_diff": 1.544,
+        "offer_value": 0.2,
+        "request_value": 0.807,
+        "offer_money": 0.16533333333333333,
+        "request_money": 0.2,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 29
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 32
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 11
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 16,
+      "request_money": 16
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35,
+        29
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        32,
+        11
+      ],
+      "request_money": 16
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        35,
+        29
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        24,
+        32,
+        11
+      ],
+      "request_money": 16,
+      "trade_features": {
+        "proposer_delta": 0.436,
+        "target_delta": -0.636,
+        "delta_diff": 1.072,
+        "offer_value": 0.578,
+        "request_value": 1.08,
+        "offer_money": 0.0,
+        "request_money": 0.010666666666666666,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 50,
+      "offer_money": 50
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 34
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 29
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 300,
+      "request_money": 300
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        14,
+        26,
+        34
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        13,
+        12,
+        29
+      ],
+      "request_money": 300
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        14,
+        26,
+        34
+      ],
+      "offer_money": 0,
+      "request_properties": [
+        13,
+        12,
+        29
+      ],
+      "request_money": 300,
+      "trade_features": {
+        "proposer_delta": -0.40625,
+        "target_delta": -0.03,
+        "delta_diff": -0.37625,
+        "offer_value": 1.095,
+        "request_value": 0.808,
+        "offer_money": 0.0,
+        "request_money": 0.2,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 29
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 18
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 25,
+      "offer_money": 25
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 32
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 14
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        16,
+        28,
+        18
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        32,
+        24,
+        14
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 2,
+      "offer_properties": [
+        16,
+        28,
+        18
+      ],
+      "offer_money": 25,
+      "request_properties": [
+        32,
+        24,
+        14
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.28125,
+        "target_delta": -0.785,
+        "delta_diff": 1.06625,
+        "offer_value": 0.744,
+        "request_value": 1.135,
+        "offer_money": 0.016666666666666666,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 3
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 2
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 0,
+      "offer_money": 0
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 5
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 16
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 25,
+      "request_money": 25
+    },
+    {
+      "type": "cancel_trade"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 32
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 31
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        35
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        24,
+        32,
+        31
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 1,
+      "offer_properties": [
+        35
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        24,
+        32,
+        31
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": 0.74,
+        "target_delta": -1.12,
+        "delta_diff": 1.86,
+        "offer_value": 0.2,
+        "request_value": 1.386,
+        "offer_money": 0.1,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "build_house",
+      "property_index": 37
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "build_house",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 25
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 11
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 35
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 62,
+      "offer_money": 62
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 24
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 13
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 500,
+      "request_money": 500
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        11,
+        3,
+        35
+      ],
+      "offer_money": 62,
+      "request_properties": [
+        15,
+        24,
+        13
+      ],
+      "request_money": 500
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        11,
+        3,
+        35
+      ],
+      "offer_money": 62,
+      "request_properties": [
+        15,
+        24,
+        13
+      ],
+      "request_money": 500,
+      "trade_features": {
+        "proposer_delta": 0.208,
+        "target_delta": -0.698,
+        "delta_diff": 0.906,
+        "offer_value": 0.62,
+        "request_value": 0.926,
+        "offer_money": 0.04133333333333333,
+        "request_money": 0.3333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 14
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 13
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 150,
+      "offer_money": 150
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 23
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        26,
+        13,
+        14
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        23,
+        21,
+        3
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "accept_trade",
+      "target_player": 3,
+      "offer_properties": [
+        26,
+        13,
+        14
+      ],
+      "offer_money": 150,
+      "request_properties": [
+        23,
+        21,
+        3
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": 0.34,
+        "target_delta": 0.91,
+        "delta_diff": -0.57,
+        "offer_value": 0.925,
+        "request_value": 0.714,
+        "offer_money": 0.1,
+        "request_money": 0.0,
+        "offer_completes_target": 1.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 1.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 18
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 27
+    },
+    {
+      "type": "build_house",
+      "property_index": 39
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 26
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 14
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 34
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 15
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 1
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 0,
+      "request_money": 0
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        25,
+        26,
+        14
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        34,
+        15,
+        1
+      ],
+      "request_money": 0
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        25,
+        26,
+        14
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        34,
+        15,
+        1
+      ],
+      "request_money": 0,
+      "trade_features": {
+        "proposer_delta": -0.34,
+        "target_delta": -0.2625,
+        "delta_diff": -0.0775,
+        "offer_value": 0.943,
+        "request_value": 1.071,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.0,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 16
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 11
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 1
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 15
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 100,
+      "offer_money": 100
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 27
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 35
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 12
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 100,
+      "request_money": 100
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 1,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        27,
+        35,
+        12
+      ],
+      "request_money": 100
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 3,
+      "offer_properties": [
+        15
+      ],
+      "offer_money": 100,
+      "request_properties": [
+        27,
+        35,
+        12
+      ],
+      "request_money": 100,
+      "trade_features": {
+        "proposer_delta": 0.6,
+        "target_delta": -0.98,
+        "delta_diff": 1.58,
+        "offer_value": 0.35,
+        "request_value": 0.829,
+        "offer_money": 0.06666666666666667,
+        "request_money": 0.06666666666666667,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 0.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 0.0,
+        "offer_critical_proposer": 0.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 28
+    },
+    {
+      "type": "build_house",
+      "property_index": 14
+    },
+    {
+      "type": "build_house",
+      "property_index": 13
+    },
+    {
+      "type": "pay_jail_fine"
+    },
+    {
+      "type": "start_trade"
+    },
+    {
+      "type": "select_trade_target",
+      "target_player": 3
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 28
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 19
+    },
+    {
+      "type": "add_trade_offer_property",
+      "property_index": 25
+    },
+    {
+      "type": "finish_trade_offer"
+    },
+    {
+      "type": "set_trade_offer_money",
+      "amount": 68,
+      "offer_money": 68
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 3
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 21
+    },
+    {
+      "type": "add_trade_request_property",
+      "property_index": 34
+    },
+    {
+      "type": "finish_trade_request"
+    },
+    {
+      "type": "set_trade_request_money",
+      "amount": 50,
+      "request_money": 50
+    },
+    {
+      "type": "submit_trade",
+      "target_player": 3,
+      "offer_properties": [
+        28,
+        19,
+        25
+      ],
+      "offer_money": 68,
+      "request_properties": [
+        3,
+        21,
+        34
+      ],
+      "request_money": 50
+    },
+    {
+      "type": "decline_trade",
+      "target_player": 1,
+      "offer_properties": [
+        28,
+        19,
+        25
+      ],
+      "offer_money": 68,
+      "request_properties": [
+        3,
+        21,
+        34
+      ],
+      "request_money": 50,
+      "trade_features": {
+        "proposer_delta": 0.352,
+        "target_delta": -0.977,
+        "delta_diff": 1.329,
+        "offer_value": 0.73,
+        "request_value": 1.084,
+        "offer_money": 0.04533333333333334,
+        "request_money": 0.03333333333333333,
+        "offer_completes_target": 0.0,
+        "request_completes_proposer": 1.0,
+        "offer_near_target": 0.0,
+        "request_near_proposer": 1.0,
+        "offer_critical_proposer": 1.0
+      }
+    },
+    {
+      "type": "roll_dice"
+    },
+    {
+      "type": "unmortgage_property",
+      "property_index": 1
+    },
+    {
+      "type": "roll_dice"
+    }
+  ],
+  "cursor": 1391,
+  "completed": true
+}
