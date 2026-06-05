@@ -1,243 +1,111 @@
-# Banco Imobiliario IA com PPO, DQN e NEAT
+# Banco Imobiliario IA
 
-Projeto de simulacao de um jogo estilo Monopoly/Banco Imobiliario, com motor de
-regras separado da interface e agentes treinados principalmente por PPO. O DQN
-antigo continua no repositorio para comparacao.
+Projeto de simulacao de um jogo estilo Monopoly/Banco Imobiliario com agentes
+de inteligencia artificial treinados para jogar partidas completas. O projeto
+nao copia nomes, arte ou marca oficial; o tabuleiro usa nomes genericos, mas
+modela as principais mecanicas classicas do jogo.
 
-O projeto nao copia nomes, arte ou marca oficial. O tabuleiro usa nomes
-genericos, mas implementa as principais mecanicas classicas: compra, aluguel,
-leilao, cadeia, cartas, hipoteca, casas, hoteis, trocas e falencia.
+O objetivo do trabalho e investigar se agentes treinados por aprendizado de
+reforco conseguem aprender estrategias relevantes em um ambiente com compra de
+propriedades, leiloes, construcao, hipotecas, falencia e negociacao entre
+jogadores. O foco atual e o agente PPO, depois de tentativas com DQN e NEAT.
 
-## Instalacao
+## Instalar
 
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 
 Dependencias principais:
 
 - `pygame`: visualizacao da partida.
-- `numpy`: vetorizacao de estado/acoes.
-- `torch`: rede neural, PPO, DQN e treino.
+- `numpy`: vetorizacao de estados e acoes.
+- `torch`: redes neurais e treino PPO/DQN.
+- `neat-python`: experimentos NEAT.
 
-## Como rodar
+## Rodar
 
-Assistir uma partida com agentes neurais:
+Assistir uma partida:
 
-```bash
-python main.py
+```powershell
+py main.py
 ```
 
-Assistir uma partida no ambiente GitHub-style/NEAT:
+Treinar PPO:
 
-```bash
-py main_github.py
-```
-
-Esse visualizador carrega `models/best_neat_github_agent.pkl` quando existir.
-Para apontar para outro checkpoint:
-
-```bash
-$env:BANCO_GITHUB_MODEL_PATH="models/outro_neat_github.pkl"
-py main_github.py
-```
-
-Treinar o PPO atual com encoder `raw`, voltado a comportamento mais emergente:
-
-```bash
-py train_ppo.py --episodes 2000 --tournament-every 100 --tournament-games 100
-```
-
-Para manter mais exploracao, especialmente nas trocas, ajuste a entropia:
-
-```bash
+```powershell
 py train_ppo.py --episodes 2000 --entropy-coef 0.05 --tournament-every 100 --tournament-games 100
 ```
 
-Esse comando salva modelos em:
+Continuar treino PPO a partir de checkpoint:
 
-```text
-models/ppo_raw_agent.pt
-models/ppo_raw_checkpoints/
-models/best_ppo_raw_agent.pt
+```powershell
+py train_ppo.py --resume models\ppo_raw_checkpoints\ppo_raw_ep_000700.pt --episodes 2000 --tournament-every 100 --tournament-games 100
 ```
 
-Retomar o PPO a partir de um checkpoint:
-
-```bash
-py train_ppo.py --resume models/ppo_raw_checkpoints/ppo_raw_ep_000700.pt --episodes 2000 --tournament-every 100 --tournament-games 100
-```
-
-Nesse caso, `--episodes 2000` significa episodio final alvo. Se o checkpoint
-esta no episodio 700, o treino continua do episodio 701 ate o 2000. Checkpoints
-novos salvam estado do modelo, otimizador, RNGs e rollout parcial do PPO.
-
-Observacao: o encoder `raw` atual tem `state_size=318` e `action_size=151`.
-O encoder `rich` atual tem `state_size=494` e `action_size=163`. Checkpoints
-PPO antigos com tamanhos diferentes sao ignorados ou precisam ser retreinados.
-
-Treinar o PPO antigo com encoder `rich`, que entrega mais features estrategicas
-prontas para a rede:
-
-```bash
-python train_ppo.py --encoder rich --episodes 2000
-```
-
-Treinar uma abordagem NEAT usando o mesmo encoder `raw`:
-
-```bash
-python train_neat.py --generations 100 --games-per-genome 2
-```
-
-Esse treino evolui redes que recebem o par `(estado_raw, acao_raw)` e retornam
-um score para cada acao valida. O treino usa self-play, hall of fame e um
-`champion gate`: um novo genoma so substitui o campeao salvo se vencer uma
-bateria curta contra o campeao atual. O melhor genoma protegido e salvo em:
-
-```text
-models/best_neat_raw_agent.pkl
-```
-
-Campeoes historicos ficam em:
-
-```text
-models/neat_hall_of_fame/
-```
-
-Quando esse arquivo existir, `python main.py` carrega o NEAT antes do PPO.
-
-Parametros uteis:
-
-```bash
-python train_neat.py --generations 200 --games-per-genome 4 --hall-of-fame-games 1 --champion-games 24
-```
-
-- `games-per-genome`: jogos de self-play por genoma.
-- `hall-of-fame-games`: rodadas extras contra campeoes antigos.
-- `hall-of-fame-size`: quantos campeoes antigos entram como adversarios.
-- `champion-games`: jogos usados para decidir se um candidato vira campeao.
-- `champion-margin`: margem minima para trocar o campeao salvo.
-
-Treinar uma abordagem NEAT no estilo do repositorio GitHub `MonopolyNEAT`:
-
-```bash
-py train_neat_github.py --generations 100 --games-per-bracket 40
-```
-
-Esse modo usa um ambiente separado em `game/github_monopoly.py`, com 126
-entradas e 9 saidas fixas da rede, como no repositorio original. A rede nao
-recebe uma lista de acoes validas; o ambiente pergunta decisoes especificas
-quando elas aparecem na partida.
-
-Para usar a escala original do repositorio, o comando equivalente seria muito
-mais caro:
-
-```bash
-py train_neat_github.py --pop-size 256 --games-per-bracket 2000
-```
-
-Na pratica, comece com valores menores e aumente quando quiser cobertura mais
-confiavel.
-
-Para rodar por tempo limitado e continuar depois:
-
-```bash
-py train_neat_github.py --pop-size 256 --games-per-bracket 2000 --max-hours 8 --checkpoint-every 1
-```
-
-O treino para somente no fim de uma geracao. Ao atingir o tempo, ele salva um
-checkpoint em `models/neat_github_checkpoints/` e imprime o comando de
-continuidade:
-
-```bash
-py train_neat_github.py --resume models/neat_github_checkpoints/neat-github-N
-```
-
-Se voce interromper manualmente com `Ctrl+C`, continue a partir do ultimo
-checkpoint salvo. Usar `--checkpoint-every 1` reduz o trabalho perdido para no
-maximo uma geracao.
-
-Treinar o DQN antigo:
-
-```bash
-python train_dqn.py --episodes 1000
-```
-
-Treinar salvando checkpoints:
-
-```bash
-python train_dqn.py --episodes 1000 --checkpoint-every 100
-```
-
-Treinar com campeonato periodico:
-
-```bash
-python train_dqn.py --episodes 1000 --checkpoint-every 100 --tournament-every 200 --tournament-games 40
-```
+`--episodes` indica o episodio final alvo. Se o checkpoint esta no episodio
+700 e o comando usa `--episodes 2000`, o treino continua do episodio 701 ate o
+2000.
 
 Rodar campeonato manual:
 
-```bash
-python tournament.py --checkpoints models/ppo_raw_checkpoints --games 100 --latest 8
+```powershell
+py tournament.py --checkpoints models/best_ppo_raw_agent.pt models/ppo_raw_checkpoints --games 1000 --latest 8
 ```
 
-Comparar NEAT contra baselines:
+Abrir o ultimo replay salvo:
 
-```bash
-python tournament.py --checkpoints models/best_neat_raw_agent.pkl --games 100
+```powershell
+$env:BANCO_REPLAY_PATH = "replays\latest_replay.json"
+py main.py
 ```
 
-## Estrutura do projeto
+Voltar a jogar/gravar partidas novas:
+
+```powershell
+Remove-Item Env:BANCO_REPLAY_PATH
+py main.py
+```
+
+## Organizacao do projeto
 
 ```text
 t1/
 |-- main.py
 |-- main_github.py
+|-- train_ppo.py
 |-- train_dqn.py
 |-- train_neat.py
 |-- train_neat_github.py
-|-- train_ppo.py
 |-- tournament.py
-|-- neat_github_config.ini
-|-- neat_raw_config.ini
-|-- requirements.txt
 |-- game/
-|   |-- actions.py
-|   |-- board.py
-|   |-- encoders.py
 |   |-- env.py
-|   |-- github_monopoly.py
+|   |-- board.py
+|   |-- actions.py
+|   |-- encoders.py
 |   |-- models.py
-|   `-- property.py
+|   |-- github_monopoly.py
 |-- agents/
+|   |-- ppo_agent.py
 |   |-- neural_agent.py
+|   |-- neat_agent.py
 |   |-- random_agent.py
 |   |-- replay_buffer.py
-|   `-- __init__.py
 |-- ui/
 |   |-- pygame_view.py
-|   `-- __init__.py
-`-- models/
-    |-- dqn_agent.pt
-    |-- best_dqn_agent.pt
-    `-- checkpoints/
+|-- models/
+|-- replays/
 ```
 
-## Ambiente do jogo
+## Principais classes e responsabilidades
 
-O ambiente principal fica em `game/env.py`, na classe `BancoImobiliarioEnv`.
+### `game.env.BancoImobiliarioEnv`
 
-Ele e responsavel por:
+Motor principal do jogo. Mantem o estado completo da partida, valida acoes,
+aplica regras, calcula recompensas, controla fases, leiloes, trocas, falencia e
+fim de jogo.
 
-- guardar o estado completo da partida;
-- validar acoes possiveis;
-- aplicar regras do jogo;
-- calcular recompensas;
-- controlar turnos, fases e fim de jogo;
-- gerar snapshots para voltar uma jogada na visualizacao.
-
-O ambiente nao depende de Pygame. A interface, o treino e os agentes conversam
-com ele usando:
+API principal:
 
 ```python
 state = env.get_state()
@@ -245,58 +113,101 @@ actions = env.get_valid_actions(player_index)
 next_state, reward, done, info = env.step(action)
 ```
 
-## Fases do ambiente
+### `game.models.Space` e `game.models.Player`
 
-O jogo usa fases para controlar quais acoes sao validas.
+Representam casas do tabuleiro e jogadores. `Space` guarda tipo da casa, preco,
+aluguel, dono, hipoteca, grupo de cor e construcoes. `Player` guarda dinheiro,
+posicao, falencia, cadeia e cartas de saida da cadeia.
 
-Principais fases:
+### `game.board`
+
+Define o tabuleiro com 40 casas, grupos de cores, ferrovias, companhias,
+impostos, cartas, cadeia e constantes do jogo.
+
+### `game.actions`
+
+Define os tipos de acoes aceitas pelo ambiente, como `roll_dice`,
+`buy_property`, `auction_bid`, `build_house`, `start_trade`, `submit_trade`,
+`accept_trade` e `decline_trade`.
+
+### `game.encoders`
+
+Transforma estados e acoes estruturados em vetores numericos para redes
+neurais. O encoder atual tem dois modos:
+
+```text
+raw:  state_size=318 | action_size=151
+rich: state_size=494 | action_size=163
+```
+
+O encoder `raw` e o padrao atual do PPO. Ele ainda inclui algumas features
+compactas para tornar trocas e complementaridade de grupos observaveis pela
+rede.
+
+### `agents.ppo_agent.PPOActorCritic`
+
+Rede Actor-Critic usada pelo PPO. O actor recebe o par `(estado, acao)` e gera
+um logit para aquela acao valida. O critic recebe apenas o estado e estima
+`V(s)`.
+
+### `agents.ppo_agent.PPOAgent`
+
+Empacota a rede PPO e escolhe uma acao entre as acoes validas. Para cada estado,
+o ambiente fornece apenas as acoes legais; o agente pontua todas e amostra uma
+acao pela distribuicao categorial.
+
+### `agents.neural_agent.QNetwork` e `agents.neural_agent.NeuralAgent`
+
+Implementacao DQN antiga. Tambem usa a ideia de avaliar pares `(estado, acao)`,
+mas aprende Q-values com replay buffer e target network.
+
+### `agents.neat_agent.NeatAgent`
+
+Adaptador para redes evoluidas por NEAT no ambiente principal.
+
+### `agents.random_agent.RandomAgent`
+
+Baseline heuristico. Apesar do nome, nao e puramente aleatorio: tende a comprar,
+construir, participar de leiloes e aceitar algumas trocas. No campeonato aparece
+como `heuristic_baseline`. O campeonato tambem inclui `pure_random_baseline`.
+
+### `ui.pygame_view.PygameView`
+
+Interface Pygame. Mostra tabuleiro, jogadores, informacoes da casa atual,
+trocas, historico, controles e timeline de replay.
+
+## Modelagem do ambiente
+
+O jogo e modelado como um ambiente multiagente por turnos. Em cada momento
+existe um jogador que deve agir. Isso pode ser o jogador do turno, o jogador
+atual de um leilao ou o jogador que precisa responder uma troca.
+
+### Fases
+
+O ambiente usa fases para limitar as acoes validas:
 
 - `ready_to_roll`: jogador pode rolar dados ou fazer acoes financeiras.
-- `awaiting_buy`: jogador caiu em propriedade sem dono e pode comprar ou passar.
-- `building_trade`: jogador esta montando uma proposta de troca por etapas.
-- `auction`: propriedade esta em leilao.
-- `pending_trade_response`: outro jogador precisa aceitar ou recusar uma troca.
-- `game_over`: partida finalizada.
+- `awaiting_buy`: jogador caiu em propriedade sem dono e decide comprar ou
+  passar para leilao.
+- `auction`: jogadores participam de leilao.
+- `building_trade`: jogador monta uma proposta de troca por etapas.
+- `pending_trade_response`: outro jogador aceita ou recusa a proposta.
+- `game_over`: partida terminada.
 
-## Tabuleiro
+### Regras implementadas
 
-O tabuleiro fica em `game/board.py`.
+O ambiente principal implementa:
 
-Ele possui 40 casas:
-
-- `go`;
-- propriedades coloridas;
-- ferrovias;
-- companhias;
-- impostos;
-- cartas de chance;
-- cartas de community chest;
-- cadeia;
-- free parking;
-- go to jail.
-
-Os grupos de cor ficam em `GROUPS`. O jogador precisa possuir todas as
-propriedades de um grupo para construir casas/hotel.
-
-## Regras implementadas
-
-O motor atual implementa:
-
-- passagem pelo Go pagando bonus;
+- passagem pelo Go com bonus;
 - compra de propriedades;
 - leilao quando uma propriedade nao e comprada;
-- aluguel de propriedades comuns;
-- aluguel dobrado em grupo completo sem casas;
-- aluguel escalonado com casas e hotel;
-- ferrovias com aluguel escalado pela quantidade possuida;
+- aluguel comum, aluguel dobrado em grupo completo e aluguel com casas/hotel;
+- ferrovias com aluguel escalado;
 - companhias com aluguel baseado nos dados;
-- impostos;
 - cartas de Chance e Community Chest;
-- cadeia;
-- saida da cadeia por dupla, pagamento ou carta;
-- tres duplas seguidas enviam para a cadeia;
+- cadeia, pagamento de fianca, carta de saida e regra das tres duplas;
 - hipoteca e quitar hipoteca;
-- juros de hipoteca;
+- juros ao receber propriedade hipotecada;
 - venda de construcoes pela metade do custo;
 - construcao uniforme dentro do grupo;
 - limite de 32 casas e 12 hoteis;
@@ -305,611 +216,571 @@ O motor atual implementa:
 - fim por ultimo jogador ativo;
 - fim por limite de turnos com vencedor por patrimonio.
 
-## Acoes
+### Trocas
 
-As acoes ficam em `game/actions.py`.
+As trocas nao sao mais propostas prontas geradas pelo ambiente. O agente monta a
+troca em etapas:
 
-Acoes principais:
-
-- `roll_dice`;
-- `buy_property`;
-- `pass_buy`;
-- `auction_bid`;
-- `auction_pass`;
-- `build_house`;
-- `sell_house`;
-- `mortgage_property`;
-- `unmortgage_property`;
-- `pay_jail_fine`;
-- `use_jail_card`;
-- `start_trade`;
-- `select_trade_target`;
-- `add_trade_offer_property`;
-- `finish_trade_offer`;
-- `set_trade_offer_money`;
-- `add_trade_request_property`;
-- `finish_trade_request`;
-- `set_trade_request_money`;
-- `submit_trade`;
-- `cancel_trade`;
-- `accept_trade`;
-- `decline_trade`.
-
-As acoes sao dicionarios estruturados. Exemplos:
-
-```python
-{"type": "roll_dice"}
-```
-
-```python
-{"type": "auction_bid", "amount": 120}
-```
-
-```python
-{"type": "build_house", "property_index": 21}
-```
-
-```python
-{
-    "type": "select_trade_target",
-    "target_player": 1,
-}
-```
-
-```python
-{
-    "type": "add_trade_offer_property",
-    "property_index": 3,
-}
-```
-
-```python
-{
-    "type": "set_trade_offer_money",
-    "amount": 100,
-}
-```
-
-```python
-{
-    "type": "submit_trade",
-    "target_player": 1,
-    "offer_properties": [3],
-    "offer_money": 100,
-    "request_properties": [12],
-    "request_money": 0,
-}
-```
-
-## Modo GitHub-style
-
-O arquivo `game/github_monopoly.py` e uma porta do ambiente usado no repositorio
-`MonopolyNEAT`.
-
-Principais diferencas em relacao ao ambiente principal:
-
-- o jogo termina em empate apos 300 turnos, como no repositorio;
-- a rede recebe um vetor fixo de estado, nao `(estado, acao)`;
-- o vetor padrao tem 126 entradas, preservando a configuracao original;
-- existe uma posicao 127 no adapter para contexto de dinheiro de troca, mas ela
-  fica desligada por padrao porque o repositorio declarou `INPUTS = 126`;
-- a rede tem 9 saidas continuas;
-- o leilao pede um unico lance de cada jogador;
-- as trocas sao geradas aleatoriamente pelo ambiente e a rede decide se oferece
-  e se aceita;
-- o fitness do treino GitHub-style usa vitorias em torneio eliminatorio, nao
-  reward denso.
-
-As 9 saidas da rede sao:
-
-```text
-0: comprar propriedade ou mandar para leilao
-1: decisao de cadeia: carta, rolar ou pagar
-2: hipotecar propriedade selecionada
-3: quitar hipoteca da propriedade selecionada
-4: valor do lance no leilao, convertido para dinheiro ate 4000
-5: quantidade de casas a construir no grupo selecionado
-6: quantidade de casas a vender no grupo selecionado
-7: propor troca gerada pelo ambiente
-8: aceitar troca recebida
-```
-
-O treino desse modo fica em `train_neat_github.py`.
-
-Fluxo do torneio GitHub-style:
-
-1. A populacao e embaralhada em grupos de 4.
-2. Cada grupo joga `games-per-bracket` partidas.
-3. Vitoria soma `1.0`; empate soma `0.25` para cada rede.
-4. A melhor rede do grupo avanca uma chave.
-5. Ao final, o fitness prioriza o bracket alcancado e usa a taxa de pontos
-   nas partidas como desempate seletivo.
-
-A formula atual e:
-
-```text
-fitness = bracket * 100 + score_rate * 10
-```
-
-Onde `score_rate` e `wins_score / jogos_disputados_pelo_genoma`. Isso evita o
-problema em que todos os campeoes de geracao ficavam com fitness igual a `20`.
-O score nao vem de reward por jogada, mas de sobreviver e vencer em partidas
-completas contra outras redes.
-
-## Regras de troca
-
-As trocas no ambiente principal agora sao montadas por decisoes sequenciais do
-agente. O ambiente nao entrega uma proposta estrategica pronta. Ele apenas
-oferece as escolhas legais da etapa atual:
-
-1. iniciar troca;
-2. escolher jogador alvo;
-3. adicionar propriedades oferecidas;
-4. definir dinheiro oferecido;
-5. adicionar propriedades pedidas;
-6. definir dinheiro pedido;
-7. enviar ou cancelar a proposta.
-
-Depois do envio, a troca vira `pending_trade_response` e o outro jogador decide
-entre `accept_trade` e `decline_trade`.
+1. `start_trade`
+2. `select_trade_target`
+3. `add_trade_offer_property`
+4. `finish_trade_offer`
+5. `set_trade_offer_money`
+6. `add_trade_request_property`
+7. `finish_trade_request`
+8. `set_trade_request_money`
+9. `submit_trade`
+10. `accept_trade` ou `decline_trade`
 
 Regras importantes:
 
-- propriedades de um grupo com casas ou hotel nao podem ser negociadas;
-- uma troca precisa ter contrapartida dos dois lados;
-- doacoes unilaterais de dinheiro/propriedade sao bloqueadas;
-- trocas puramente dinheiro-por-dinheiro sao bloqueadas;
+- propriedades de grupo com casas/hotel nao podem ser negociadas;
+- doacoes unilaterais sao bloqueadas;
+- trocas apenas dinheiro-por-dinheiro sao bloqueadas;
+- uma proposta precisa ter contrapartida dos dois lados;
 - propriedades hipotecadas podem ser negociadas;
-- ao receber propriedade hipotecada, o novo dono paga os juros de transferencia
-  quando aplicavel.
+- ao receber propriedade hipotecada, o novo dono paga juros de transferencia
+  quando aplicavel;
+- `cancel_trade` so aparece como fallback tecnico quando nao existe outra acao
+  valida na etapa atual.
 
-Essas regras evitam casos como um jogador doar terreno sem motivo ou transferir
-um grupo construido mantendo casas no terreno.
-
-## PPO e trocas
-
-O PPO usa uma politica compartilhada entre os quatro jogadores. Para evitar que
-uma recompensa de um jogador contamine a decisao de outro, o treino separa as
-trajetorias por jogador dentro de cada partida.
-
-Em cada `env.step`, o ambiente retorna `rewards_by_player` com a mudanca real de
-patrimonio de cada jogador. O treino acumula essa recompensa na ultima decisao
-do respectivo jogador. Com isso, se um jogador monta uma proposta ruim e outro
-aceita depois, o prejuizo volta para a decisao de propor a troca.
-
-O estado tambem codifica o jogador que esta agindo de fato. Em resposta de
-troca, `current_player` no estado passa a ser quem decide aceitar ou recusar,
-nao apenas o jogador dono do turno original.
-
-Para facilitar trocas emergentes sem entregar propostas prontas, o encoder inclui
-features compactas de complementaridade:
-
-- se o jogador atual consegue completar um grupo pegando propriedade de cada
-  adversario;
-- se o adversario consegue completar um grupo pegando propriedade do jogador
-  atual;
-- se existe complementaridade mutua, como `2/3 Orange` contra `2/3 Pink`.
-
-O curriculum de trocas cria algumas partidas com estados complementares, mas o
-agente ainda precisa decidir iniciar, montar, enviar, aceitar ou recusar a troca.
-
-Durante o treino, o campo `trades` no log usa o formato:
+O encoder inclui sinais de complementaridade de troca. Exemplo:
 
 ```text
-trades=inicios/envios/cancelamentos/aceites/recusas
+Jogador A tem 2/3 Orange.
+Jogador B tem o Orange faltante.
+Jogador B tem 2/3 Pink.
+Jogador A tem o Pink faltante.
 ```
 
-Exemplo: `trades=8/2/5/1/1` significa que o agente iniciou 8 montagens de troca,
-enviou 2 propostas, cancelou 5, teve 1 aceite e 1 recusa.
+Nesse caso o estado indica que existe potencial de troca mutuamente benefica.
+O ambiente nao monta a proposta; ele apenas torna esse padrao observavel.
 
-## Anti-loops financeiros
+### Replays
 
-Para evitar loops artificiais como:
-
-```text
-construir -> vender -> construir -> vender
-hipotecar -> quitar -> hipotecar -> quitar
-```
-
-o ambiente restringe algumas acoes:
-
-- vender construcoes e hipotecar so aparecem como acoes livres quando o jogador
-  esta com dinheiro negativo;
-- quitar hipoteca exige dinheiro suficiente e uma reserva de caixa;
-- uma propriedade que vendeu construcao no turno nao pode construir de novo no
-  mesmo turno;
-- uma construcao feita no turno nao pode ser vendida no mesmo turno, exceto em
-  liquidacao automatica por divida.
-
-## Leiloes
-
-Quando o jogador cai em uma propriedade sem dono e escolhe `pass_buy`, o jogo
-inicia um leilao.
-
-O leilao tem teto de lance racional. O ambiente nao oferece lances que gastam
-todo o dinheiro do jogador sem motivo.
-
-O teto considera:
-
-- preco da propriedade;
-- reserva minima de caixa;
-- se a propriedade completa um grupo;
-- se a propriedade bloqueia monopolio de outro jogador;
-- quantidade de ferrovias/companhias ja possuidas.
-
-Isso evita que a exploracao inicial do DQN destrua o jogador em lances absurdos.
-
-## Replay e voltar jogada
-
-Na visualizacao, o ambiente e criado com `enable_undo=True`.
-
-Antes de cada `env.step(action)`, o ambiente salva um snapshot completo:
-
-- tabuleiro;
-- jogadores;
-- dinheiro;
-- propriedades;
-- casas/hoteis;
-- hipotecas;
-- fase;
-- leilao;
-- troca pendente;
-- estado interno do random.
-
-Com isso, a tecla `U` ou `Backspace` volta uma jogada real, nao apenas o texto
-do historico.
-
-## Replays salvos
-
-A visualizacao salva partidas em arquivos JSON dentro de `replays/`.
-
-Ao iniciar uma partida normal com `py main.py`, o programa cria um arquivo como:
-
-```text
-replays/replay_YYYYMMDD_HHMMSS_seed_123.json
-```
-
-O mesmo conteudo tambem e atualizado em:
-
-```text
-replays/latest_replay.json
-```
-
-O replay salva:
+A visualizacao salva partidas em `replays/`. Cada replay JSON guarda:
 
 - seed da partida;
-- caminho/modelo usado;
-- lista exata de acoes executadas;
+- modelo usado;
+- lista exata de acoes;
 - cursor atual;
 - se a partida terminou.
 
-Como as acoes ficam gravadas, o replay nao depende de a IA escolher as mesmas
-acoes novamente. Ao reassistir, a partida segue exatamente o arquivo salvo.
-
-Controles de replay na visualizacao:
-
-- `S`: salva imediatamente a partida atual;
-- `L`: carrega `replays/latest_replay.json`;
-- slider inferior: volta ou avanca para qualquer acao gravada;
-- `U` ou `Backspace`: volta uma acao usando a timeline.
-
-Para abrir um replay especifico:
-
-```powershell
-$env:BANCO_REPLAY_PATH = "replays\latest_replay.json"
-py main.py
-```
-
-Em modo replay carregado, a visualizacao nao gera novas acoes alem do arquivo.
-Para voltar a jogar/gravar partidas novas:
-
-```powershell
-Remove-Item Env:BANCO_REPLAY_PATH
-py main.py
-```
-
-## Visualizacao
-
-A interface fica em `ui/pygame_view.py`.
+Como as acoes sao gravadas, a partida pode ser reassistida exatamente mesmo que
+o modelo atual tenha mudado.
 
 Controles:
 
-- `N` ou seta para direita: executa uma acao da IA;
-- `SPACE`: pausa ou retoma modo automatico;
-- `+`: aumenta a velocidade;
-- `-`: diminui a velocidade;
-- `U` ou `Backspace`: volta uma jogada;
-- `S`: salva o replay atual;
-- `L`: carrega o ultimo replay salvo;
-- `R`: reinicia;
-- `ESC`: fecha.
+- `S`: salva replay atual.
+- `L`: carrega `replays/latest_replay.json`.
+- slider inferior: avanca ou volta para qualquer acao gravada.
+- `U` ou `Backspace`: volta uma acao pela timeline.
 
-A lateral mostra:
+## Recompensas e punicoes
 
-- jogador atual;
-- fase;
-- dados;
-- dinheiro dos jogadores;
-- quantidade de propriedades;
-- construcoes;
-- casa atual;
-- ultima mensagem;
-- historico recente.
+O reward principal vem do ambiente em `env.step(action)`.
 
-## Agente neural
+### Patrimonio
 
-O agente neural fica em `agents/neural_agent.py`.
-
-Ele usa DQN, mas com uma diferenca importante: a rede nao tem uma saida fixa
-para cada acao. Em vez disso, ela aprende:
+A base do reward e a mudanca de patrimonio liquido:
 
 ```text
-Q(estado, acao)
+reward_base = (patrimonio_depois - patrimonio_antes) / 100
 ```
 
-Ou seja, a rede recebe o vetor do estado concatenado com o vetor de uma acao
-candidata e devolve um unico valor Q.
+O patrimonio inclui dinheiro, propriedades, hipotecas e construcoes. Falencia e
+perda de patrimonio geram rewards negativos por consequencia direta.
 
-Isso permite avaliar acoes estruturadas, como:
+### Rewards estrategicos
 
-- proposta de troca com propriedades e dinheiro;
+O ambiente tambem aplica shaping leve para acelerar o aprendizado:
+
+- `buy_property` e `auction_bid`: `+1.0`;
+- `build_house` bem-sucedido: `+4.0`;
+- completar grupo de cor: `+12.0` por grupo novo;
+- vencer a partida: `+100.0`;
+- perder ao fim da partida: `-100.0`.
+
+### Compra e leilao
+
+Existe shaping especifico para compra/leilao:
+
+- comprar ou dar lance em propriedade que completa grupo recebe bonus maior;
+- comprar ou dar lance em propriedade que bloqueia monopolio de outro jogador
+  tambem recebe bonus;
+- passar compra ou sair de leilao quando ainda havia valor estrategico pode
+  gerar penalidade;
+- lances tem teto racional para evitar que agentes gastem todo o dinheiro em
+  uma propriedade sem sentido.
+
+### Trocas
+
+As trocas usam recompensa por consequencia real:
+
+- se uma troca aumenta o patrimonio de um jogador, ele recebe reward positivo;
+- se uma troca prejudica o jogador, recebe reward negativo;
+- o ambiente retorna `rewards_by_player`, ou seja, recompensa separada para cada
+  jogador afetado;
+- no PPO, essa recompensa e atribuida a ultima decisao do jogador correto.
+
+Isso corrige um problema observado durante o desenvolvimento: antes, um jogador
+podia propor uma troca ruim, outro aceitava, e o prejuizo nao voltava
+corretamente para quem tinha proposto.
+
+### Clip no treino
+
+No PPO, antes de entrar no rollout, o reward e limitado:
+
+```text
+REWARD_CLIP_MIN = -10.0
+REWARD_CLIP_MAX = 10.0
+```
+
+Isso reduz explosoes na funcao de valor.
+
+## Tentativas de solucao
+
+### DQN
+
+Primeira abordagem neural usada no projeto.
+
+Implementacao:
+
+- arquivo principal: `train_dqn.py`;
+- agente: `agents/neural_agent.py`;
+- replay buffer: `agents/replay_buffer.py`;
+- rede aprende `Q(estado, acao)`;
+- target network;
+- epsilon-greedy;
+- replay buffer;
+- ajuste adversarial no alvo quando a proxima acao e de outro jogador.
+
+Problemas observados:
+
+- o treino era instavel;
+- reward chegou a ficar extremamente negativo antes dos ajustes de patrimonio;
+- agentes evitavam comprar ou demoravam a desenvolver o tabuleiro;
+- o espaco de acoes variavel tornou o problema mais dificil para DQN;
+- trocas eram especialmente ruins, porque dependem de sequencias longas e
+  credito temporal dificil;
+- loss isolada nao indicava qualidade real de jogo.
+
+Resultado pratico:
+
+- DQN ajudou a estruturar o ambiente e os encoders;
+- nao foi a abordagem mais adequada para o estado atual do problema;
+- foi mantido como comparacao historica.
+
+Limitacoes:
+
+- pouco adequado para acoes longas e estruturadas de negociacao;
+- sensivel ao replay buffer em ambiente multiagente nao estacionario;
+- Q-values podem ficar instaveis com recompensas de longo prazo.
+
+### PPO
+
+Abordagem principal atual.
+
+Motivos da troca para PPO:
+
+- lida melhor com acoes amostradas por politica;
+- permite trabalhar diretamente com distribuicao sobre acoes validas;
+- combina melhor com self-play;
+- facilita medir entropia, policy loss e value loss;
+- evita alguns problemas de Q-learning em ambiente multiagente.
+
+Resultado atual:
+
+Em um campeonato manual com 1000 partidas totais:
+
+```text
+rank | competidor       | jogos | vitorias | win% | pos_med | patrimonio | score
+0001 | ppo_raw_ep0450   |   418 |      183 | 43.8 |    2.11 |   16008.70 | 5767.86
+0002 | ppo_raw_ep0400   |   781 |      295 | 37.8 |    2.23 |   13348.28 | 4889.37
+0008 | heuristic_baseli |   388 |       50 | 12.9 |    2.90 |    4154.20 | 1414.13
+0009 | pure_random_base |   404 |       35 |  8.7 |    3.06 |    1985.09 |  758.90
+```
+
+Interpretacao:
+
+- PPO superou claramente `heuristic_baseline` e `pure_random_baseline`;
+- `ppo_raw_ep0450` foi o melhor checkpoint observado no campeonato maior;
+- a diferenca para os baselines foi grande o suficiente para nao parecer apenas
+  sorte;
+- campeonatos pequenos com 100 jogos totais ainda apresentaram muita variancia;
+- 1000 jogos totais produziram uma leitura mais confiavel.
+
+Limitacoes:
+
+- ainda ha instabilidade entre checkpoints;
+- partidas de Monopoly tem variancia alta por dados, cartas e ordem de turno;
+- 100 jogos totais por campeonato nao eliminam a sorte;
+- trocas ainda sao a parte mais dificil do aprendizado;
+- PPO atual e feedforward, sem memoria explicita de negociacoes recusadas;
+- a politica e compartilhada entre jogadores, o que simplifica o treino, mas
+  limita especializacao;
+- nao existe modelagem explicita de intencao dos adversarios.
+
+### NEAT no ambiente principal
+
+Foi implementada uma versao NEAT que usa o mesmo par `(estado_raw, acao_raw)` do
+ambiente principal.
+
+Caracteristicas:
+
+- arquivo: `train_neat.py`;
+- agente: `agents/neat_agent.py`;
+- self-play;
+- hall of fame;
+- champion gate para evitar substituir campeoes por candidatos piores.
+
+Motivo do experimento:
+
+- o video/referencia usava NEAT;
+- NEAT pode encontrar estruturas de rede sem gradiente;
+- poderia mostrar comportamento emergente com outra abordagem.
+
+Limitacoes observadas:
+
+- muito caro computacionalmente;
+- precisa de muitos jogos por genoma para reduzir sorte;
+- poucas geracoes pequenas nao garantem cobertura suficiente;
+- nao ha garantia de superar PPO;
+- avaliar genomas em Monopoly e lento por natureza.
+
+### NEAT GitHub-style
+
+Foi criada tambem uma implementacao separada mais parecida com o repositorio
+`MonopolyNEAT`.
+
+Arquivos:
+
+- `game/github_monopoly.py`;
+- `train_neat_github.py`;
+- `main_github.py`;
+- `neat_github_config.ini`.
+
+Caracteristicas:
+
+- vetor fixo de 126 entradas;
+- 9 saidas da rede;
+- ambiente separado do principal;
+- torneio em chaves;
+- fitness baseado em progresso no bracket e taxa de pontuacao.
+
+Limitacoes:
+
+- ambiente nao e identico ao principal;
+- a rede nao recebe lista de acoes validas como no PPO;
+- trocas no estilo GitHub sao menos controladas pelo agente;
+- para usar a escala original, como `--pop-size 256 --games-per-bracket 2000`,
+  o custo fica muito alto;
+- resultados de pequenas geracoes sao muito ruidosos.
+
+### Baselines
+
+O campeonato usa dois baselines:
+
+- `pure_random_baseline`: escolhe acoes validas aleatoriamente.
+- `heuristic_baseline`: usa regras simples para comprar, construir, leiloar,
+  sair da cadeia e aceitar algumas trocas.
+
+Esses baselines sao importantes porque loss/reward isolados nao dizem se o
+agente joga melhor.
+
+## PPO atual em detalhes
+
+### Rede
+
+Classe: `PPOActorCritic`.
+
+Arquitetura padrao:
+
+- hidden size: `512`;
+- actor com duas camadas escondidas;
+- critic com duas camadas escondidas;
+- ativacao ReLU;
+- actor recebe `estado + acao`;
+- critic recebe apenas `estado`.
+
+O actor nao tem uma saida fixa para cada acao. Em vez disso, para cada estado:
+
+1. o ambiente gera a lista de acoes validas;
+2. cada acao e codificada;
+3. a rede calcula um logit para cada par `(estado, acao)`;
+4. a distribuicao categorial e formada apenas sobre acoes validas;
+5. uma acao e amostrada durante treino.
+
+Isso funciona melhor para acoes estruturadas, como:
+
 - lance de leilao com valor;
-- construcao em uma propriedade especifica;
-- hipoteca de uma propriedade especifica.
+- construir em uma propriedade especifica;
+- hipotecar propriedade;
+- montar troca com propriedades e dinheiro.
 
-Durante a escolha:
+### Critic
 
-1. O ambiente gera as acoes validas.
-2. O agente codifica o estado.
-3. O agente codifica cada acao valida.
-4. A rede calcula Q para cada par `(estado, acao)`.
-5. O agente escolhe a acao com maior Q.
+O critic estima `V(s)`, nao Q-values. Ele tenta prever o retorno esperado a
+partir do estado, independentemente da acao especifica.
 
-Durante treino, tambem existe exploracao epsilon-greedy.
+### PPO loss
 
-## Agente aleatorio/heuristico
+O treino usa:
 
-O arquivo `agents/random_agent.py` contem um agente simples baseado em regras.
+- clipped surrogate objective;
+- value loss;
+- bonus de entropia;
+- GAE para vantagens.
 
-Ele nao e puramente aleatorio. Ele tende a:
-
-- comprar propriedades;
-- construir quando possivel;
-- pagar/usar carta para sair da cadeia em algumas situacoes;
-- participar de leiloes;
-- aceitar algumas trocas;
-- usar hipoteca/venda apenas defensivamente.
-
-Por isso, no campeonato ele e chamado de `heuristic_baseline`.
-
-O campeonato tambem tem `pure_random_baseline`, que escolhe qualquer acao valida
-ao acaso.
-
-## Encoder do DQN
-
-O arquivo `game/encoders.py` transforma estado e acao em vetores numericos.
-
-O estado inclui:
-
-- jogador atual;
-- fase;
-- dados;
-- duplas consecutivas;
-- dinheiro;
-- posicao;
-- falencia;
-- cadeia;
-- turnos na cadeia;
-- cartas de sair da cadeia;
-- donos das propriedades;
-- casas/hoteis;
-- hipotecas;
-- troca em montagem ou troca pendente;
-- casas/hoteis restantes no banco;
-- turno atual.
-
-A acao inclui:
-
-- tipo da acao;
-- jogador alvo;
-- propriedades oferecidas em troca;
-- propriedades pedidas em troca;
-- propriedade alvo da acao;
-- dinheiro oferecido/pedido;
-- valor de lance.
-
-Se `STATE_SIZE` ou `ACTION_SIZE` mudar, modelos antigos ficam incompativeis e
-precisam ser treinados novamente.
-
-## Treino DQN
-
-O treino fica em `train_dqn.py`.
-
-Fluxo de cada episodio:
-
-1. Cria um ambiente novo.
-2. Calcula o epsilon do episodio.
-3. Enquanto a partida nao termina:
-   - pega o jogador que deve agir;
-   - busca acoes validas;
-   - escolhe acao com epsilon-greedy;
-   - aplica `env.step(action)`;
-   - salva transicao no replay buffer;
-   - periodicamente otimiza a rede.
-4. Atualiza a target network periodicamente.
-5. Salva modelo/checkpoint periodicamente.
-6. Opcionalmente roda campeonato.
-
-## Replay buffer
-
-O replay buffer fica em `agents/replay_buffer.py`.
-
-Cada transicao salva:
-
-- vetor `(estado, acao)`;
-- reward;
-- proximo estado;
-- proximas acoes validas;
-- se a partida acabou.
-
-Durante otimizacao, o treino amostra batches aleatorios do buffer. Isso reduz a
-correlacao entre jogadas consecutivas e deixa o DQN mais estavel.
-
-## Loss function
-
-A loss fica em `train_dqn.py`.
-
-Ela usa Smooth L1 Loss, tambem chamada de Huber loss:
-
-```python
-loss_fn = nn.SmoothL1Loss()
-loss = loss_fn(current_q, expected_q)
-```
-
-O valor atual:
+Parametros atuais principais:
 
 ```text
-current_q = Q(estado, acao)
+GAMMA = 0.98
+GAE_LAMBDA = 0.95
+LEARNING_RATE = 1e-4
+BATCH_SIZE = 128
+PPO_EPOCHS = 2
+CLIP_EPSILON = 0.20
+VALUE_COEF = 0.50
+ENTROPY_COEF = 0.05
+MAX_GRAD_NORM = 0.50
+UPDATE_EVERY_EPISODES = 4
+TRADE_CURRICULUM_RATIO = 0.50
 ```
 
-O alvo:
+`--entropy-coef` pode ser ajustado por linha de comando. Ele foi aumentado para
+manter mais exploracao em trocas, porque o agente chegou a reduzir demais a
+frequencia de propostas.
+
+### Rollout por jogador
+
+Como todos os jogadores usam a mesma politica, o PPO poderia misturar recompensas
+de jogadores diferentes. Para reduzir esse problema, o treino separa as
+trajetorias por jogador.
+
+Quando uma acao de um jogador afeta outro, `env.step` retorna
+`rewards_by_player`. O treino acumula a recompensa de cada jogador na ultima
+decisao daquele jogador.
+
+Isso e especialmente importante em trocas:
 
 ```text
-expected_q = reward + gamma * max Q(proximo_estado, proxima_acao)
+Jogador 1 propoe troca ruim.
+Jogador 4 aceita.
+Jogador 1 perde patrimonio.
+Reward negativo volta para a ultima decisao do Jogador 1.
 ```
 
-Em jogo multiagente, existe um ajuste adversarial:
+### Curriculum de trocas
 
-- se o proximo jogador a agir for o mesmo jogador, o melhor Q futuro entra como
-  oportunidade;
-- se o proximo jogador for um adversario, o melhor Q dele entra como ameaca e
-  e subtraido parcialmente do alvo.
-
-Na pratica:
+Parte dos episodios comeca em estados favoraveis a negociacao. Exemplo:
 
 ```text
-mesmo jogador:
-expected_q = reward + gamma * max Q(proximo_estado, minha_proxima_acao)
-
-adversario:
-expected_q = reward - gamma * OPPONENT_Q_WEIGHT * max Q(proximo_estado, acao_do_adversario)
+Jogador A tem 2/3 Orange e 1/3 Pink.
+Jogador B tem 1/3 Orange e 2/3 Pink.
 ```
 
-Isso faz o DQN levar em conta que uma acao aparentemente boa pode entregar uma
-resposta forte para outro jogador.
+O ambiente nao monta a troca. Ele apenas cria o estado. O agente ainda precisa:
 
-Se a partida acabou:
+- iniciar troca;
+- escolher alvo;
+- oferecer a propriedade certa;
+- pedir a propriedade certa;
+- definir dinheiro;
+- enviar proposta;
+- aceitar ou recusar como outro jogador.
+
+### Checkpoints e campeonatos
+
+O treino salva:
 
 ```text
-expected_q = reward
+models/ppo_raw_agent.pt
+models/ppo_raw_checkpoints/
+models/best_ppo_raw_agent.pt
 ```
 
-Entao a loss mede o erro entre o valor Q previsto e o alvo calculado.
+O melhor checkpoint e escolhido por campeonato, nao apenas por reward de treino.
+Isso e necessario porque o reward por episodio e muito ruidoso.
 
-## Reward
+## Resultados observados
 
-O reward combina:
+Durante o desenvolvimento, foram observados estes comportamentos:
 
-- mudanca de patrimonio liquido;
-- bonus por comprar propriedade;
-- bonus por construir;
-- bonus por completar grupo;
-- bonus/penalidade final por vencer ou perder.
+- no inicio, agentes frequentemente nao compravam propriedades suficientes;
+- DQN gerou rewards muito negativos antes de ajustes;
+- leiloes inicialmente permitiam gastos absurdos;
+- agentes faziam loops de construir/vender e hipotecar/quitar;
+- trocas antigas permitiam propostas sem sentido, inclusive doar propriedades
+  ou trocar dinheiro por dinheiro;
+- PPO inicialmente aceitava quase todas as trocas porque o estado indicava o
+  jogador errado durante resposta;
+- depois da correcao de reward por jogador, as trocas passaram a ser punidas ou
+  recompensadas de forma mais coerente;
+- remover `cancel_trade` como acao normal reduziu o atalho de iniciar e cancelar
+  trocas;
+- aumentar entropia ajudou a manter exploracao de negociacao;
+- campeonatos pequenos tinham alta variancia;
+- campeonato maior com 1000 jogos totais indicou superioridade clara do PPO
+  sobre os baselines.
 
-O patrimonio usado no reward nao usa sentinelas artificiais de falencia. Isso
-evita rewards gigantes negativos como `-30000`.
+Resultado mais relevante conhecido:
 
-## Epsilon
+```text
+ppo_raw_ep0450:
+  jogos: 418
+  vitorias: 183
+  win%: 43.8
+  pos_med: 2.11
+  patrimonio: 16008.70
+  score: 5767.86
 
-O treino usa epsilon-greedy:
+heuristic_baseline:
+  jogos: 388
+  vitorias: 50
+  win%: 12.9
+  pos_med: 2.90
+  patrimonio: 4154.20
+  score: 1414.13
 
-- com probabilidade epsilon, escolhe acao aleatoria;
-- caso contrario, escolhe maior Q.
-
-Atualmente:
-
-- `epsilon_start = 1.0`;
-- `epsilon_end = 0.05`;
-- decai ate o minimo em 40% dos episodios.
-
-Isso reduz mais cedo a fase em que os agentes tomam decisoes quase totalmente
-aleatorias.
-
-## Hiperparametros atuais
-
-Para reduzir instabilidade do DQN, o treino usa:
-
-- `LEARNING_RATE = 3e-5`;
-- `BATCH_SIZE = 128`;
-- `OPTIMIZE_EVERY_STEPS = 20`;
-- `TARGET_UPDATE_EVERY = 50`;
-- `GAMMA = 0.98`;
-- `OPPONENT_Q_WEIGHT = 0.75`;
-- reward clipado entre `-10` e `+10` antes de entrar no replay buffer.
-
-O reward bruto ainda vem do ambiente, mas o valor usado para treinar e somar no
-log do episodio e limitado. Isso reduz saltos grandes nos Q-values.
-
-## Checkpoints
-
-O modelo principal e salvo em:
-
-```bash
-models/dqn_agent.pt
+pure_random_baseline:
+  jogos: 404
+  vitorias: 35
+  win%: 8.7
+  pos_med: 3.06
+  patrimonio: 1985.09
+  score: 758.90
 ```
 
-Checkpoints periodicos sao salvos em:
+Conclusao atual: o PPO ja joga melhor que os baselines disponiveis, mas ainda
+nao deve ser considerado uma solucao final.
 
-```bash
-models/checkpoints/
+## Limitacoes atuais
+
+### Ambiente
+
+- Ainda ha shaping manual em compra, leilao, construcao e grupo completo.
+- As regras sao uma aproximacao das principais mecanicas, nao uma replica legal
+  perfeita de todas as variantes.
+- O fim por limite de turnos ainda pode influenciar estrategias.
+- A ordem dos jogadores e randomizada no reset, mas jogos de tabuleiro continuam
+  tendo forte variancia por dados/cartas.
+
+### Trocas
+
+- A negociacao e sequencial e longa, o que dificulta credito temporal.
+- O PPO nao tem memoria recorrente de propostas recusadas.
+- Nao ha sistema de contraoferta.
+- Nao ha modelagem explicita de "quanto o adversario precisa dessa propriedade".
+- O agente pode aprender a fazer muitas propostas se isso parecer barato no
+  curto prazo.
+
+### PPO
+
+- A politica compartilhada simplifica o treino, mas todos os jogadores usam a
+  mesma rede.
+- O critic estima apenas `V(s)`, nao avalia explicitamente cada oponente.
+- PPO e sensivel a hiperparametros e pode piorar temporariamente entre
+  checkpoints.
+- Campeonatos pequenos podem escolher campeoes por sorte.
+
+### DQN
+
+- Mais instavel neste ambiente.
+- Sofre com acoes variaveis e estrategias longas.
+- Replay buffer mistura experiencias de uma politica que muda em self-play.
+
+### NEAT
+
+- Muito caro para avaliar de forma confiavel.
+- Precisa de muitas partidas por genoma.
+- Pequenas geracoes sao altamente ruidosas.
+
+## Melhorias possiveis
+
+Sem considerar apenas "treinar por mais tempo", os principais caminhos de
+melhoria sao:
+
+### 1. Politica com memoria
+
+Usar uma rede recorrente, como LSTM/GRU, para que o agente lembre de propostas
+recentes, recusas, padroes de adversarios e contexto de negociacao.
+
+### 2. Attention ou arquitetura por entidades
+
+Em vez de vetor plano, representar jogadores, propriedades e grupos como
+entidades. Uma arquitetura com attention poderia comparar diretamente:
+
+```text
+minhas propriedades
+propriedades do alvo
+grupos quase completos
+dinheiro disponivel
+risco de aluguel
 ```
 
-Exemplo:
+### 3. Melhor abstracao de trocas
 
-```bash
-models/checkpoints/dqn_ep_000500.pt
-```
+Manter a decisao emergente, mas reduzir a sequencia de acoes. Exemplo:
 
-O melhor checkpoint encontrado pelo campeonato e salvo em:
+- escolher grupo desejado;
+- escolher propriedade alvo;
+- escolher compensacao;
+- escolher dinheiro em buckets.
 
-```bash
-models/best_dqn_agent.pt
-```
+Isso preserva aprendizado, mas reduz combinatoria.
 
-## Campeonato hibrido
+### 4. Contraofertas
 
-O campeonato fica em `tournament.py`.
+Adicionar uma fase de negociacao onde uma troca recusada pode gerar uma
+contraoferta ou nova proposta informada pelo historico.
 
-Ele nao substitui a loss do DQN. Ele serve para avaliar desempenho real em
-partidas completas.
+### 5. Avaliacao estatistica melhor
 
-Competidores:
+Usar campeonatos maiores, round-robin balanceado, seeds fixas por comparacao e
+intervalos de confianca. Outra alternativa e usar Elo, Glicko ou TrueSkill para
+avaliar checkpoints.
 
-- checkpoints DQN;
-- `pure_random_baseline`;
-- `heuristic_baseline`.
+### 6. Self-play populacional
 
-Metricas:
+Em vez de todos os jogadores usarem sempre a mesma politica mais recente,
+treinar contra uma populacao de checkpoints antigos. Isso reduz esquecimento e
+estrategias que exploram apenas a versao atual de si mesmo.
 
-- `jogos`: partidas jogadas;
-- `vitorias`: partidas vencidas;
-- `win%`: taxa de vitoria;
-- `pos_med`: posicao media final;
-- `patrimonio`: patrimonio medio final;
-- `score`: pontuacao normalizada do campeonato.
+### 7. MAPPO ou politicas separadas
 
-O score prioriza taxa de vitoria, usa posicao media como desempate e patrimonio
-medio como sinal auxiliar.
+Usar uma abordagem multiagente mais explicita, como MAPPO, ou politicas por
+assento/jogador. Isso pode melhorar credito em interacoes competitivas.
 
-Isso permite escolher modelos pelo desempenho real, nao apenas pela loss.
+### 8. Rewards auxiliares melhor controlados
 
-## Observacoes importantes
+Criar metricas auxiliares sem entregar a resposta pronta, como:
 
-- Modelos antigos podem ficar incompativeis depois de mudancas no estado ou nas
-  acoes.
-- A loss so mede erro de Q-value; ela nao garante que o agente joga melhor.
-- Para avaliar aprendizado em jogos longos, use tambem campeonato, win rate,
-  patrimonio medio e comportamento observado.
-- O agente ainda nao faz minimax, expectimax ou modelagem explicita dos outros
-  jogadores. Esse comportamento pode emergir por self-play, mas nao e planejado
-  diretamente.
+- liquidez minima;
+- risco de falencia;
+- valor potencial de grupo completo;
+- taxa de aceite de propostas;
+- custo de spam de propostas.
+
+Esses sinais precisam ser calibrados para nao substituir a estrategia emergente.
+
+### 9. Melhor modelagem de leiloes
+
+O teto racional atual evita lances absurdos, mas ainda pode ser refinado com
+valor contextual, bloqueio de adversario e liquidez pos-compra.
+
+### 10. Paralelizacao de ambientes
+
+Rodar multiplos ambientes em paralelo para coletar rollouts maiores por update,
+reduzindo variancia sem depender apenas de mais tempo sequencial.
+
+## Observacoes finais
+
+O projeto evoluiu de uma implementacao DQN instavel para uma abordagem PPO mais
+adequada ao ambiente. A IA atual ja supera os baselines em campeonatos maiores,
+mas o problema ainda e aberto: Monopoly/Banco Imobiliario combina sorte,
+planejamento de longo prazo, negociacao, liquidez e interacao adversarial.
+
+O melhor resultado ate agora indica que a abordagem esta funcionando, mas ainda
+ha espaco relevante para melhorar arquitetura, representacao do estado,
+negociacao e avaliacao estatistica.
