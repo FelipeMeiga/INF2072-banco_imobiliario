@@ -26,7 +26,6 @@ from game.actions import (
 )
 from game.board import GROUPS, RAILROADS, UTILITIES, create_board
 
-
 class RandomAgent:
     def __init__(self, player_id: int, seed: int | None = None):
         self.player_id = player_id
