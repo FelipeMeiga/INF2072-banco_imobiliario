@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import random
+import time
 from dataclasses import dataclass, field
 from itertools import count
 from pathlib import Path
@@ -306,12 +307,49 @@ def run_game(
     }
 
 
+def format_duration(seconds: float) -> str:
+    seconds = max(0, int(seconds))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def print_progress(
+    completed_games: int,
+    total_games: int,
+    start_time: float,
+    total_steps: int,
+):
+    elapsed = time.perf_counter() - start_time
+    games_per_minute = (completed_games / elapsed * 60.0) if elapsed > 0 else 0.0
+    remaining_games = max(0, total_games - completed_games)
+    eta_seconds = (remaining_games / games_per_minute * 60.0) if games_per_minute > 0 else 0.0
+    percent = completed_games / total_games if total_games > 0 else 1.0
+    bar_width = 30
+    filled = int(round(bar_width * percent))
+    bar = "#" * filled + "-" * (bar_width - filled)
+    avg_steps = total_steps / completed_games if completed_games else 0.0
+
+    print(
+        f"Progresso [{bar}] "
+        f"{completed_games}/{total_games} ({percent * 100:5.1f}%) | "
+        f"{games_per_minute:6.2f} jogos/min | "
+        f"steps_med={avg_steps:7.1f} | "
+        f"decorrido={format_duration(elapsed)} | "
+        f"eta={format_duration(eta_seconds)}",
+        flush=True,
+    )
+
+
 def run_tournament(
     competitors: List[Competitor],
     games: int,
     seed: int = 123,
     device: Optional[str] = None,
     include_baselines: bool = True,
+    progress_every: int = 50,
 ) -> Dict[str, CompetitorStats]:
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     rng = random.Random(seed)
@@ -329,6 +367,8 @@ def run_tournament(
         for competitor in tournament_competitors
     }
 
+    start_time = time.perf_counter()
+    total_steps = 0
     for game_index in range(1, games + 1):
         seated = choose_competitors_for_game(tournament_competitors, rng, game_index)
         result = run_game(
@@ -336,6 +376,7 @@ def run_tournament(
             seed=seed + game_index,
             device=device,
         )
+        total_steps += int(result["steps"])
         winner = result["winner"]
         ranks = result["ranks"]
         net_worths = result["net_worths"]
@@ -351,6 +392,13 @@ def run_tournament(
 
             if winner == seat:
                 competitor_stats.wins += 1
+
+        if progress_every > 0 and (
+            game_index == 1
+            or game_index == games
+            or game_index % progress_every == 0
+        ):
+            print_progress(game_index, games, start_time, total_steps)
 
     return stats
 
@@ -411,6 +459,7 @@ def main():
     parser.add_argument("--seed", type=int, default=123)
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument("--latest", type=int, default=0)
+    parser.add_argument("--progress-every", type=int, default=50)
     parser.add_argument("--no-baselines", "--no-random", dest="no_baselines", action="store_true")
     args = parser.parse_args()
 
@@ -428,6 +477,7 @@ def main():
         seed=args.seed,
         device=device,
         include_baselines=not args.no_baselines,
+        progress_every=args.progress_every,
     )
     print_scoreboard(stats)
 
