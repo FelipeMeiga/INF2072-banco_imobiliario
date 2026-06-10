@@ -47,6 +47,18 @@ py train_ppo.py --resume models\ppo_raw_checkpoints\ppo_raw_ep_000700.pt --episo
 700 e o comando usa `--episodes 2000`, o treino continua do episodio 701 ate o
 2000.
 
+Treinar NEAT no ambiente principal:
+
+```powershell
+py train_neat.py --generations 100 --pop-size 80 --games-per-genome 2 --baseline-games 1 --hall-of-fame-games 1 --champion-games 12 --checkpoint-every 3
+```
+
+Continuar treino NEAT a partir de checkpoint:
+
+```powershell
+py train_neat.py --resume models\neat_checkpoints\neat-7 --generations 20
+```
+
 Rodar campeonato manual:
 
 ```powershell
@@ -78,6 +90,8 @@ t1/
 |-- train_neat.py
 |-- train_neat_github.py
 |-- tournament.py
+|-- neat_raw_config.ini
+|-- neat_github_config.ini
 |-- game/
 |   |-- env.py
 |   |-- board.py
@@ -431,9 +445,56 @@ Caracteristicas:
 
 - arquivo: `train_neat.py`;
 - agente: `agents/neat_agent.py`;
+- configuracao: `neat_raw_config.ini`;
+- rede feedforward com 469 entradas (`318` do estado raw + `151` da acao raw)
+  e uma saida usada como pontuacao da acao;
+- conexoes iniciais `partial_direct 0.10`;
 - self-play;
+- rodadas dedicadas contra uma mesa com ate dois candidatos, o baseline
+  heuristico e o baseline puramente aleatorio;
 - hall of fame;
 - champion gate para evitar substituir campeoes por candidatos piores.
+
+O fitness de cada assento combina reward acumulado, patrimonio final, posicao,
+bonus por vitoria e penalidade por falencia. O fitness final do genoma e a media
+das partidas disputadas na geracao.
+
+Treino recomendado, tambem mostrado na secao `Rodar`:
+
+```powershell
+py train_neat.py --generations 100 --pop-size 80 --games-per-genome 2 --baseline-games 1 --hall-of-fame-games 1 --champion-games 12 --checkpoint-every 3
+```
+
+Parametros principais:
+
+- `--pop-size`: sobrescreve o tamanho da populacao da configuracao, com minimo
+  de 4. Sem esse parametro, `neat_raw_config.ini` usa 80. Ao usar `--resume`, o
+  tamanho salvo no checkpoint e mantido;
+- `--games-per-genome`: quantidade de rodadas de self-play por geracao;
+- `--baseline-games`: quantidade de rodadas dedicadas contra os dois baselines;
+- `--hall-of-fame-games`: quantidade de rodadas contra campeoes anteriores;
+- `--champion-games`: partidas usadas pelo champion gate;
+- `--champion-margin`: margem minima para substituir o campeao;
+- `--max-steps`: limite de acoes por partida, atualmente 4000 por padrao;
+- `--checkpoint-every`: intervalo de checkpoints de populacao;
+- `--resume`: checkpoint de populacao usado para continuar o treino.
+
+Durante cada geracao, o log separa `pop`, `base` e `hof`, permitindo conferir
+quantas partidas vieram de self-play, baselines e hall of fame. O limite de
+acoes evita gastar muito tempo em partidas travadas; ao atingir o limite, o
+ambiente encerra a partida e classifica os jogadores pelo estado final.
+
+Arquivos gerados:
+
+```text
+models/best_neat_raw_agent.pkl
+models/neat_checkpoints/neat-*
+models/neat_hall_of_fame/neat_hof_gen_*.pkl
+```
+
+O melhor agente salvo e validado pelo champion gate. Os arquivos em
+`models/neat_checkpoints/` guardam a populacao completa e podem ser usados com
+`--resume`; os arquivos do hall of fame guardam agentes individuais.
 
 Motivo do experimento:
 

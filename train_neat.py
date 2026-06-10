@@ -141,6 +141,7 @@ class NeatSelfPlayEvaluator:
     def __init__(
         self,
         games_per_genome: int,
+        baseline_games: int,
         hall_of_fame_games: int,
         hall_of_fame_size: int,
         champion_games: int,
@@ -152,6 +153,7 @@ class NeatSelfPlayEvaluator:
         start_generation: int,
     ):
         self.games_per_genome = games_per_genome
+        self.baseline_games = baseline_games
         self.hall_of_fame_games = hall_of_fame_games
         self.hall_of_fame_size = hall_of_fame_size
         self.champion_games = champion_games
@@ -182,6 +184,7 @@ class NeatSelfPlayEvaluator:
         genome_items = list(genomes)
         game_counter = 0
         population_games = 0
+        baseline_games = 0
         hall_games = 0
 
         for round_index in range(self.games_per_genome):
@@ -233,6 +236,75 @@ class NeatSelfPlayEvaluator:
 
                 game_counter += 1
                 population_games += 1
+
+        for baseline_round in range(self.baseline_games):
+            rng.shuffle(genome_items)
+
+            for start in range(0, len(genome_items), 2):
+                group = genome_items[start : start + 2]
+                participants = []
+
+                for seat, (genome_id, _) in enumerate(group):
+                    participants.append(
+                        SeatParticipant(
+                            genome_id=genome_id,
+                            tag="candidate",
+                            agent=NeatAgent(
+                                player_id=seat,
+                                network=networks[genome_id],
+                                seed=self.seed
+                                + self.generation * 100_000
+                                + baseline_round * 10_000
+                                + start
+                                + seat,
+                            ),
+                        )
+                    )
+
+                participants.append(
+                    SeatParticipant(
+                        genome_id=None,
+                        tag="heuristic",
+                        agent=RandomAgent(
+                            player_id=len(participants),
+                            seed=self.seed
+                            + self.generation * 100_000
+                            + baseline_round * 10_000
+                            + start
+                            + 100,
+                        ),
+                    )
+                )
+                participants.append(
+                    SeatParticipant(
+                        genome_id=None,
+                        tag="pure_random",
+                        agent=PureRandomAgent(
+                            player_id=len(participants),
+                            seed=self.seed
+                            + self.generation * 100_000
+                            + baseline_round * 10_000
+                            + start
+                            + 200,
+                        ),
+                    )
+                )
+
+                rng.shuffle(participants)
+                result = run_neat_game(
+                    participants=participants,
+                    seed=self.seed + self.generation * 100_000 + game_counter,
+                    max_steps=self.max_steps,
+                )
+
+                for seat, participant in enumerate(participants):
+                    if participant.genome_id is None:
+                        continue
+                    fitness_sums[participant.genome_id] += seat_fitness(result, seat)
+                    games_played[participant.genome_id] += 1
+
+                game_counter += 1
+                baseline_games += 1
 
         hall_members = self.hall_of_fame[: self.hall_of_fame_size]
         if hall_members and self.hall_of_fame_games > 0:
@@ -317,6 +389,7 @@ class NeatSelfPlayEvaluator:
             f"Geracao {self.generation:04d} | "
             f"jogos={game_counter:04d} | "
             f"pop={population_games:04d} | "
+            f"base={baseline_games:04d} | "
             f"hof={hall_games:04d} | "
             f"fitness_med={avg_fitness:8.2f} | "
             f"melhor={best_genome.fitness:8.2f} | "
@@ -510,7 +583,7 @@ class NeatSelfPlayEvaluator:
         )
 
 
-def load_config(config_path: str):
+def load_config(config_path: str, pop_size: Optional[int]):
     import neat
 
     config = neat.Config(
@@ -525,6 +598,8 @@ def load_config(config_path: str):
             f"Config NEAT invalida: num_inputs={config.genome_config.num_inputs}, "
             f"esperado={NEAT_INPUT_SIZE}"
         )
+    if pop_size is not None:
+        config.pop_size = max(4, int(pop_size))
     return config
 
 
@@ -532,6 +607,7 @@ def train(
     config_path: str,
     generations: int,
     games_per_genome: int,
+    baseline_games: int,
     seed: int,
     output_path: str,
     checkpoint_prefix: str,
@@ -543,6 +619,7 @@ def train(
     hall_of_fame_games: int,
     champion_games: int,
     champion_margin: float,
+    pop_size: Optional[int],
 ):
     import neat
 
@@ -563,7 +640,7 @@ def train(
         population = neat.Checkpointer.restore_checkpoint(resume)
         config = population.config
     else:
-        config = load_config(config_path)
+        config = load_config(config_path, pop_size)
         population = neat.Population(config)
 
     population.add_reporter(neat.StdOutReporter(True))
@@ -578,6 +655,7 @@ def train(
 
     evaluator = NeatSelfPlayEvaluator(
         games_per_genome=max(1, games_per_genome),
+        baseline_games=max(0, baseline_games),
         hall_of_fame_games=max(0, hall_of_fame_games),
         hall_of_fame_size=max(1, hall_of_fame_size),
         champion_games=max(1, champion_games),
@@ -601,11 +679,13 @@ def main():
     parser.add_argument("--config", type=str, default="neat_raw_config.ini")
     parser.add_argument("--generations", type=int, default=100)
     parser.add_argument("--games-per-genome", type=int, default=2)
+    parser.add_argument("--baseline-games", type=int, default=1)
+    parser.add_argument("--pop-size", type=int, default=None)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", type=str, default="models/best_neat_raw_agent.pkl")
     parser.add_argument("--checkpoint-prefix", type=str, default="models/neat_checkpoints/neat-")
     parser.add_argument("--checkpoint-every", type=int, default=10)
-    parser.add_argument("--max-steps", type=int, default=12_000)
+    parser.add_argument("--max-steps", type=int, default=4_000)
     parser.add_argument("--resume", type=str, default=None)
     parser.add_argument("--hall-of-fame-dir", type=str, default="models/neat_hall_of_fame")
     parser.add_argument("--hall-of-fame-size", type=int, default=6)
@@ -618,6 +698,7 @@ def main():
         config_path=args.config,
         generations=max(1, args.generations),
         games_per_genome=max(1, args.games_per_genome),
+        baseline_games=max(0, args.baseline_games),
         seed=args.seed,
         output_path=args.output,
         checkpoint_prefix=args.checkpoint_prefix,
@@ -629,6 +710,7 @@ def main():
         hall_of_fame_games=args.hall_of_fame_games,
         champion_games=args.champion_games,
         champion_margin=args.champion_margin,
+        pop_size=args.pop_size,
     )
 
 
