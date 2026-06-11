@@ -1,0 +1,145 @@
+{
+  "checked_at": 1781058100.0856116,
+  "state_size": 494,
+  "action_size": 163,
+  "files": [
+    {
+      "path": "models\\best_dqn_agent.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 500,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\best_ppo_agent.pt",
+      "algorithm": "ppo",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 150,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\best_ppo_raw_agent.pt",
+      "algorithm": "ppo",
+      "state_size": 318,
+      "action_size": 151,
+      "episode": 650,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\dqn_agent.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 600,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\ppo_agent.pt",
+      "algorithm": "ppo",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 1000,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\ppo_raw_agent.pt",
+      "algorithm": "ppo",
+      "state_size": 318,
+      "action_size": 151,
+      "episode": 2600,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\best_neat_github_agent.pkl",
+      "error": "Weights only load failed. In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.\nPlease file an issue with the following so that we can make `weights_only=True` compatible with your use case: WeightsUnpickler error: \n\nUnsupported operand 149\n\nCheck the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.",
+      "compatible_with_current_encoders": null
+    },
+    {
+      "path": "models\\best_neat_raw_agent.pkl",
+      "error": "Weights only load failed. In PyTorch 2.6, we changed the default value of the `weights_only` argument in `torch.load` from `False` to `True`. Re-running `torch.load` with `weights_only` set to `False` will likely succeed, but it can result in arbitrary code execution. Do it only if you got the file from a trusted source.\nPlease file an issue with the following so that we can make `weights_only=True` compatible with your use case: WeightsUnpickler error: \n\nUnsupported operand 149\n\nCheck the documentation of torch.load to learn more about types accepted by default with weights_only https://pytorch.org/docs/stable/generated/torch.load.html.",
+      "compatible_with_current_encoders": null
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000100.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 100,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000200.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 200,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000300.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 300,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000400.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 400,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000500.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 500,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000600.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 600,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000700.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 700,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000800.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 800,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_000900.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 900,
+      "compatible_with_current_encoders": false
+    },
+    {
+      "path": "models\\checkpoints\\dqn_ep_001000.pt",
+      "algorithm": "dqn",
+      "state_size": 383,
+      "action_size": 141,
+      "episode": 1000,
+      "compatible_with_current_encoders": false
+    }
+  ]
+}
